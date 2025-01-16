@@ -10,10 +10,10 @@ func (q *Query) Login(email, password string) (string , error) {
 	var dbpassword string
 	var userId string
 	err := q.db.QueryRow(`
-		SELECT user_id , password 
+		SELECT user_id , user_password 
 		FROM users
 		WHERE user_email=$1
-	`, email).Scan(userId, dbpassword)
+	`, email).Scan(&userId, &dbpassword)
 	if err != nil {
 		return "",err
 	}
