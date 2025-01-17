@@ -10,21 +10,22 @@ import (
 
 type Router struct {
 	mux *mux.Router
-	db *sql.DB
+	db  *sql.DB
 }
 
 func NewRouter(conn *Connection) *Router {
 	mux := mux.NewRouter()
 	router := &Router{
 		mux: mux,
-		db: conn.db,
+		db:  conn.db,
 	}
-	AuthRouters(router)
+	UserRouters(router)
 	return router
 }
 
-func AuthRouters(r *Router) {
-	authHandler := handlers.NewUserHandler(repository.NewUserRepo(r.db))
-	r.mux.HandleFunc("/login", authHandler.LoginHandler).Methods("POST")
-	r.mux.HandleFunc("/register", authHandler.RegisterHandler).Methods("POST")
+func UserRouters(r *Router) {
+	userHandler := handlers.NewUserHandler(repository.NewUserRepo(r.db))
+	r.mux.HandleFunc("/login", userHandler.LoginHandler).Methods("POST")
+	r.mux.HandleFunc("/register", userHandler.RegisterHandler).Methods("POST")
+	r.mux.HandleFunc("/delete/{user_id}", userHandler.DeleteUserHandler).Methods("DELETE")
 }

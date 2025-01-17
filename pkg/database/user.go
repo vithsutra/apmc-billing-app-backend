@@ -6,7 +6,7 @@ import (
 	"github.com/vsynclabs/billsoft/pkg/utils"
 )
 
-func (q *Query) Login(email, password string) (string , error) {
+func (q *Query) Login(email, password string) (string, error) {
 	var dbpassword string
 	var userId string
 	err := q.db.QueryRow(`
@@ -15,28 +15,28 @@ func (q *Query) Login(email, password string) (string , error) {
 		WHERE user_email=$1
 	`, email).Scan(&userId, &dbpassword)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 	err = utils.VerifyPassword(dbpassword, password)
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	ts , err := utils.GenerateJWTToken(userId)
+	ts, err := utils.GenerateJWTToken(userId)
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	return ts,nil
+	return ts, nil
 }
 
-func (q *Query) Register(user models.User) (string,error) {
+func (q *Query) Register(user models.User) (string, error) {
 	user.UserId = uuid.NewString()
-	pass , err := utils.EncryptPassword(user.UserPassword)
+	pass, err := utils.EncryptPassword(user.UserPassword)
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	tk , err := utils.GenerateJWTToken(user.UserId)
+	tk, err := utils.GenerateJWTToken(user.UserId)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 	_, err = q.db.Exec(`
 		INSERT INTO users(
@@ -56,7 +56,18 @@ func (q *Query) Register(user models.User) (string,error) {
 		user.UserAddress, user.UserPhone, user.UserGSTIN, user.UserPAN,
 	)
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	return tk , nil
+	return tk, nil
+}
+
+func (q *Query) DeleteUser(userId string) error {
+	query := `DELETE FROM users WHERE user_id=$1`
+	_, err := q.db.Exec(query, userId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

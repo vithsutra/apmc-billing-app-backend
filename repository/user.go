@@ -3,8 +3,10 @@ package repository
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/vsynclabs/billsoft/internals/models"
 	"github.com/vsynclabs/billsoft/pkg/database"
 	validator "gopkg.in/validator.v2"
@@ -51,4 +53,22 @@ func (ur *UserRepo) Register(r *http.Request) (string, error) {
 		return "", err
 	}
 	return tk, nil
+}
+
+func (ur *UserRepo) DeleteUser(r *http.Request) error {
+	vars := mux.Vars(r)
+
+	userId := vars["user_id"]
+
+	if userId == "" {
+		return errors.New("user id is required")
+	}
+
+	query := database.NewQuery(ur.db)
+
+	if err := query.DeleteUser(userId); err != nil {
+		return err
+	}
+
+	return nil
 }

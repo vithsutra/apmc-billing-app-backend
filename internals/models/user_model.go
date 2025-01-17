@@ -16,4 +16,5 @@ type User struct {
 type UserInterface interface {
 	Login(*http.Request) (string, error)
 	Register(*http.Request) (string, error)
+	DeleteUser(*http.Request) error
 }
