@@ -23,3 +23,11 @@ func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 
 	return err
 }
+
+func (q *Query) DeleteInvoice(invoiceId string) error {
+	query := `DELETE FROM invoice WHERE invoice_id=$1`
+
+	_, err := q.db.Exec(query, invoiceId)
+
+	return err
+}
