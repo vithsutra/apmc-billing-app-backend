@@ -1,0 +1,65 @@
+package repository
+
+import (
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"log"
+	"net/http"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
+	"github.com/vsynclabs/billsoft/internals/models"
+	"github.com/vsynclabs/billsoft/pkg/database"
+	"gopkg.in/validator.v2"
+)
+
+type ConsigneeRepo struct {
+	db *sql.DB
+}
+
+func NeeConsigneeRepo(db *sql.DB) *ConsigneeRepo {
+	return &ConsigneeRepo{
+		db: db,
+	}
+}
+
+func (c *ConsigneeRepo) CreateConsignee(r *http.Request) error {
+	var consignee models.Consignee
+
+	if err := json.NewDecoder(r.Body).Decode(&consignee); err != nil {
+		return err
+	}
+
+	if err := validator.Validate(consignee); err != nil {
+		return err
+	}
+
+	consignee.ConsigneeId = uuid.NewString()
+
+	query := database.NewQuery(c.db)
+	if err := query.CreateConsignee(&consignee); err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (c *ConsigneeRepo) DeleteConsignee(r *http.Request) error {
+	vars := mux.Vars(r)
+
+	consigneeId := vars["consignee_id"]
+
+	if consigneeId == "" {
+		return errors.New("Consignee id cannot empty")
+	}
+
+	query := database.NewQuery(c.db)
+	if err := query.DeleteConsignee(consigneeId); err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+
+}
