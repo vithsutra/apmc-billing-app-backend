@@ -1,11 +1,11 @@
-package main
+package cmd
 
 import (
 	"database/sql"
 	"log"
 	"os"
 
-	_"github.com/lib/pq"
+	_ "github.com/lib/pq"
 )
 
 type Connection struct {
