@@ -65,3 +65,24 @@ func (repo *ReceiverRepo) DeleteReceiver(r *http.Request) error {
 
 	return nil
 }
+
+func (repo *ReceiverRepo) GetReceivers(r *http.Request) ([]*models.Receiver, error) {
+	vars := mux.Vars(r)
+
+	userId := vars["user_id"]
+
+	if userId == "" {
+		return nil, errors.New("user id cannot be empty")
+	}
+
+	query := database.NewQuery(repo.db)
+
+	receivers, err := query.GetReceivers(userId)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return receivers, nil
+}

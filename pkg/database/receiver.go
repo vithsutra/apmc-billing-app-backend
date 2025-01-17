@@ -31,3 +31,41 @@ func (q *Query) DeleteReceiver(receiverId string) error {
 	_, err := q.db.Exec(query, receiverId)
 	return err
 }
+
+func (q *Query) GetReceivers(userId string) ([]*models.Receiver, error) {
+	query := `SELECT (
+				billed_id,
+				billed_name,
+				billed_address,
+				billed_gstin,
+				billed_state,
+				billed_state_code,
+			  ) FROM billed WHERE user_id=$1`
+
+	rows, err := q.db.Query(query, userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var receivers []*models.Receiver
+
+	for rows.Next() {
+		var receiver models.Receiver
+
+		if err := rows.Scan(
+			&receiver.ReceiverId,
+			&receiver.ReceiverName,
+			&receiver.ReceiverAddress,
+			&receiver.ReceiverGstin,
+			&receiver.ReceiverState,
+			&receiver.ReceiverStateCode,
+		); err != nil {
+			return nil, err
+		}
+
+		receivers = append(receivers, &receiver)
+	}
+
+	return receivers, nil
+}
