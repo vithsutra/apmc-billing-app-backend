@@ -3,14 +3,14 @@ package models
 import "net/http"
 
 type User struct {
-	UserId       string `json:"user_id"`
-	UserName     string `json:"user_name"`
-	UserEmail    string `json:"user_email"`
-	UserPassword string `json:"user_password"`
-	UserAddress  string `json:"user_address"`
-	UserPhone    string `json:"user_phone"`
-	UserGSTIN    string `json:"user_gstin"`
-	UserPAN      string `json:"user_pan"`
+	UserId       string `json:"user_id" validate:"required,max=50"`
+	UserName     string `json:"user_name" validate:"required,max=50"`
+	UserEmail    string `json:"user_email" validate:"required,email,max=50"`
+	UserPassword string `json:"user_password" validate:"required,max=50"`
+	UserAddress  string `json:"user_address" validate:"required,max=50"`
+	UserPhone    string `json:"user_phone" validate:"required,max=50"`
+	UserGSTIN    string `json:"user_gstin" validate:"required,max=50"`
+	UserPAN      string `json:"user_pan" validate:"required,max=50"`
 }
 
 type UserInterface interface {
