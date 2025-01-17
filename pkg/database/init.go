@@ -48,6 +48,16 @@ func (q *Query) InitilizeDatabase() error {
 			FOREIGN KEY (billed_id) REFERENCES billed(billed_id) ON DELETE CASCADE,
 			FOREIGN KEY (shipped_id) REFERENCES shipped(shipped_id) ON DELETE CASCADE
 		)`,
+		`CREATE TABLE IF NOT EXISTS product(
+			product_id VARCHAR(100) PRIMARY KEY,
+			product_name VARCHAR(100) NOT NULL,
+			product_hsn VARCHAR(100) NOT NULL,
+			product_quantity VARCHAR(100) NOT NULL,
+			product_unit VARCHAR(100) NOT NULL,
+			product_rate VARCHAR(100) NOT NULL,
+			invoice_id VARCHAR(100) NOT NULL,
+			FOREIGN KEY (invoice_id) REFERENCES invoice(invoice_id) ON DELETE CASCADE
+		)`,
 	}
 	tx, err := q.db.Begin()
 	if err != nil {
