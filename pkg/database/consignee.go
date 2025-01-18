@@ -30,7 +30,7 @@ func (q *Query) CreateConsignee(consignee *models.Consignee) error {
 }
 
 func (q *Query) DeleteConsignee(consigneeId string) error {
-	query := `DELETE FROM billed WHERE billed_id=$1`
+	query := `DELETE FROM shipped WHERE shipped_id=$1`
 	_, err := q.db.Exec(query, consigneeId)
 	return err
 }
