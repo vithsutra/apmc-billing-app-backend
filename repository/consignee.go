@@ -63,3 +63,20 @@ func (c *ConsigneeRepo) DeleteConsignee(r *http.Request) error {
 	return nil
 
 }
+func (c *ConsigneeRepo) GetConsignee(r *http.Request)([]*models.Consignee error) {
+	vars := mux.Vars(r)
+
+	userId := vars["user_id"]
+
+	if userId == "" {
+		return nil, errors.New("user id cannot be empty")
+	}
+	query := database.NewQuery(repo.db)
+
+	consignees, err := query.GetConsignee(userId)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return consignees, nil
+}
