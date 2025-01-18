@@ -31,7 +31,7 @@ func UserRouters(r *Router) {
 
 }
 func ConsigneeRouters(r *Router) {
-	ConsigneeHandler := handlers.NewConsigneeHandler(repository.NewConsigneeRepo(r.db))
+	ConsigneeHandler := handlers.NewConsigneeHandler(repository.NeeConsigneeRepo(r.db))
 	r.mux.HandleFunc("/createConsignee", ConsigneeHandler.CreateConsigneeHandler).Methods("POST")
 	r.mux.HandleFunc("/deleteConsignee/{consignee_id}", ConsigneeHandler.DeleteConsigneeHandler).Methods("DELETE")
 	r.mux.HandleFunc("/getConsignee/{user_id}", ConsigneeHandler.GetConsigneeHandler).Methods("GET")

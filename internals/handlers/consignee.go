@@ -1,5 +1,12 @@
 package handlers
 
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/vsynclabs/billsoft/internals/models"
+)
+
 type ConsigneeHandler struct {
 	ConsigneeRepo models.ConsigneeInterface
 }
@@ -10,7 +17,7 @@ func NewConsigneeHandler(ConsigneeRepo models.ConsigneeInterface) *ConsigneeHand
 	}
 }
 func (ch *ConsigneeHandler) CreateConsigneeHandler(w http.ResponseWriter, r *http.Request) {
-	res, err := ch.ConsigneeRepo.CreateConsignee(r)
+	err := ch.ConsigneeRepo.CreateConsignee(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
@@ -21,7 +28,7 @@ func (ch *ConsigneeHandler) CreateConsigneeHandler(w http.ResponseWriter, r *htt
 }
 
 func (ch *ConsigneeHandler) DeleteConsigneeHandler(w http.ResponseWriter, r *http.Request) {
-	res, err := ch.ConsigneeRepo.DeleteConsignee(r)
+	err := ch.ConsigneeRepo.DeleteConsignee(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
@@ -39,5 +46,5 @@ func (ch *ConsigneeHandler) GetConsigneeHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Consignee fetched successfully"})
+	json.NewEncoder(w).Encode(map[string][]*models.Consignee{"consignee_details": res})
 }
