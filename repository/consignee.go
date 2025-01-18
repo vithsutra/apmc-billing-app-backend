@@ -63,7 +63,7 @@ func (c *ConsigneeRepo) DeleteConsignee(r *http.Request) error {
 	return nil
 
 }
-func (c *ConsigneeRepo) GetConsignee(r *http.Request)([]*models.Consignee error) {
+func (repo *ConsigneeRepo) GetConsignee(r *http.Request) ([]*models.Consignee, error) {
 	vars := mux.Vars(r)
 
 	userId := vars["user_id"]
