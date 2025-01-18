@@ -1,5 +1,7 @@
 package models
 
+import "net/http"
+
 type Consignee struct {
 	ConsigneeId          string `json:"consignee_id"`
 	ConsigneeName        string `json:"consignee_name" validate:"required,max =50"`
@@ -9,4 +11,10 @@ type Consignee struct {
 	ConsigneeState       string `json:"consignee_state" validate:"required,max=50"`
 	ConsigneeStateCode   string `json:"consignee_state_code" validate:"required,max=50"`
 	UserId               string `json:"user_id" validate:"required,max=100"`
+}
+
+type ConsigneeInterface interface {
+	CreateConsignee(*http.Request) error
+	DeleteConsignee(*http.Request) error
+	GetConsignee(r *http.Request) ([]*Consignee, error)
 }
