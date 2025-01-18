@@ -28,4 +28,12 @@ func UserRouters(r *Router) {
 	r.mux.HandleFunc("/login", userHandler.LoginHandler).Methods("POST")
 	r.mux.HandleFunc("/register", userHandler.RegisterHandler).Methods("POST")
 	r.mux.HandleFunc("/delete/{user_id}", userHandler.DeleteUserHandler).Methods("DELETE")
+
+}
+func ConsigneeRouters(r *Router) {
+	ConsigneeHandler := handlers.NewConsigneeHandler(repository.NewConsigneeRepo(r.db))
+	r.mux.HandleFunc("/createConsignee", ConsigneeHandler.CreateConsigneeHandler).Methods("POST")
+	r.mux.HandleFunc("/deleteConsignee/{consignee_id}", ConsigneeHandler.DeleteConsigneeHandler).Methods("DELETE")
+	r.mux.HandleFunc("/getConsignee/{user_id}", ConsigneeHandler.GetConsigneeHandler).Methods("GET")
+
 }
