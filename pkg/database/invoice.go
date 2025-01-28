@@ -13,7 +13,7 @@ func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 					billed_id,
 					shipped_id,
 					invoice_date,
-					supply_date,
+					supply_date
 				) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`
 	_, err := q.db.Exec(
 		query,

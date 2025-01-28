@@ -1,6 +1,8 @@
 package database
 
-import "github.com/vsynclabs/billsoft/internals/models"
+import (
+	"github.com/vsynclabs/billsoft/internals/models"
+)
 
 func (q *Query) CreateReceiver(receiver *models.Receiver) error {
 	query := `INSERT INTO billed (
@@ -33,14 +35,14 @@ func (q *Query) DeleteReceiver(receiverId string) error {
 }
 
 func (q *Query) GetReceivers(userId string) ([]*models.Receiver, error) {
-	query := `SELECT (
+	query := `SELECT
 				billed_id,
 				billed_name,
 				billed_address,
 				billed_gstin,
 				billed_state,
-				billed_state_code,
-			  ) FROM billed WHERE user_id=$1`
+				billed_state_code
+			   FROM billed WHERE user_id=$1`
 
 	rows, err := q.db.Query(query, userId)
 
@@ -49,6 +51,8 @@ func (q *Query) GetReceivers(userId string) ([]*models.Receiver, error) {
 	}
 
 	var receivers []*models.Receiver
+
+	defer rows.Close()
 
 	for rows.Next() {
 		var receiver models.Receiver
