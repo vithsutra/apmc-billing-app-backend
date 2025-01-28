@@ -28,9 +28,10 @@ func NewRouter(conn *Connection) *Router {
 
 func UserRouters(r *Router) {
 	userHandler := handlers.NewUserHandler(repository.NewUserRepo(r.db))
-	r.mux.HandleFunc("/login", userHandler.LoginHandler).Methods("POST")
-	r.mux.HandleFunc("/register", userHandler.RegisterHandler).Methods("POST")
+	r.mux.HandleFunc("/create/user", userHandler.RegisterHandler).Methods("POST")
 	r.mux.HandleFunc("/delete/{user_id}", userHandler.DeleteUserHandler).Methods("DELETE")
+	r.mux.HandleFunc("/login", userHandler.LoginHandler).Methods("POST")
+
 }
 
 func ConsigneeRouters(r *Router) {

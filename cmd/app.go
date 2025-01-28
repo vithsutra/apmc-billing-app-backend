@@ -40,10 +40,10 @@ func Start() {
 	}
 	// New Server
 	server := &http.Server{
-		Addr:    os.Getenv("PORT"),
+		Addr:    os.Getenv("ADDRESS"),
 		Handler: NewRouter(conn).mux,
 	}
-	log.Printf("Server is running on port %v", os.Getenv("PORT"))
+	log.Printf("Server is running on address %v", os.Getenv("ADDRESS"))
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Fatalf("Unable to start the server: %v", err)
