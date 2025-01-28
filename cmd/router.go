@@ -23,6 +23,7 @@ func NewRouter(conn *Connection) *Router {
 	ConsigneeRouters(router)
 	ReceiverRouters(router)
 	ProductRouters(router)
+	InvoiceRouters(router)
 	return router
 }
 
@@ -45,7 +46,7 @@ func ReceiverRouters(r *Router) {
 	receiverHandler := handlers.NewReceiverHandler(repository.NewReceiverRepo(r.db))
 	r.mux.HandleFunc("/create/receiver", receiverHandler.CreateReceiverHandler).Methods("POST")
 	r.mux.HandleFunc("/delete/receiver/{receiver_id}", receiverHandler.DeleteReceiverHandler).Methods("DELETE")
-	r.mux.HandleFunc("get/receivers/{user_id}", receiverHandler.GetReceiversHandler).Methods("GET")
+	r.mux.HandleFunc("/get/receivers/{user_id}", receiverHandler.GetReceiversHandler).Methods("GET")
 }
 
 func ProductRouters(r *Router) {
