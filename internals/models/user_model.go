@@ -3,7 +3,7 @@ package models
 import "net/http"
 
 type User struct {
-	UserId       string `json:"user_id" validate:"required"`
+	UserId       string `json:"user_id"`
 	UserName     string `json:"user_name" validate:"required,max=50"`
 	UserEmail    string `json:"user_email" validate:"required,email,max=50"`
 	UserPassword string `json:"user_password" validate:"required,max=50"`
