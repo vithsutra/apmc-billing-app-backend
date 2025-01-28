@@ -7,11 +7,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/vsynclabs/billsoft/internals/models"
 	"github.com/vsynclabs/billsoft/pkg/database"
-	"gopkg.in/validator.v2"
 )
 
 type ConsigneeRepo struct {
@@ -31,7 +31,8 @@ func (c *ConsigneeRepo) CreateConsignee(r *http.Request) error {
 		return err
 	}
 
-	if err := validator.Validate(consignee); err != nil {
+	validate := validator.New()
+	if err := validate.Struct(consignee); err != nil {
 		return err
 	}
 

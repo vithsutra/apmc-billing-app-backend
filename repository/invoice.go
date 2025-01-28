@@ -7,11 +7,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/vsynclabs/billsoft/internals/models"
 	"github.com/vsynclabs/billsoft/pkg/database"
-	"gopkg.in/validator.v2"
 )
 
 type InvoiceRepo struct {
@@ -31,7 +31,9 @@ func (repo *InvoiceRepo) CreateInvoice(r *http.Request) (string, error) {
 		return "", errors.New("error occurred while decoding")
 	}
 
-	if err := validator.Validate(invoice); err != nil {
+	validate := validator.New()
+
+	if err := validate.Struct(invoice); err != nil {
 		return "", err
 	}
 

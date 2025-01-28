@@ -4,12 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/vsynclabs/billsoft/internals/models"
 	"github.com/vsynclabs/billsoft/pkg/database"
-	validator "gopkg.in/validator.v2"
 )
 
 type UserRepo struct {
@@ -25,9 +26,13 @@ func NewUserRepo(db *sql.DB) *UserRepo {
 func (ur *UserRepo) Login(r *http.Request) (string, error) {
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		log.Println(err)
 		return "", err
 	}
-	if err := validator.Validate(user); err != nil {
+
+	validate := validator.New()
+
+	if err := validate.Struct(user); err != nil {
 		return "", err
 	}
 	query := database.NewQuery(ur.db)
@@ -42,9 +47,12 @@ func (ur *UserRepo) Register(r *http.Request) (string, error) {
 	var user models.User
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		log.Println(err)
 		return "", err
 	}
-	if err := validator.Validate(user); err != nil {
+	validate := validator.New()
+	if err := validate.Struct(user); err != nil {
+		log.Println(err)
 		return "", err
 	}
 	query := database.NewQuery(ur.db)
