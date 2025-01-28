@@ -1,5 +1,7 @@
 package models
 
+import "net/http"
+
 type Products struct {
 	ProductId   string `json:"product_id"`
 	ProcuctName string `json:"product_name" validate:"required,max=50"`
@@ -8,4 +10,9 @@ type Products struct {
 	ProductUnit string `json:"product_unit" validate:"required,max=50"`
 	ProductRate string `json:"product_rate" validate:"required,max=50"`
 	InvoiceId   string `json:"invoice_id" validate:"required,max=100"`
+}
+
+type ProductInterface interface {
+	CreateProduct(*http.Request) error
+	DeleteProduct(*http.Request) error
 }
