@@ -2,9 +2,9 @@ package models
 
 import "net/http"
 
-type Products struct {
+type Product struct {
 	ProductId   string `json:"product_id"`
-	ProcuctName string `json:"product_name" validate:"required,max=50"`
+	ProductName string `json:"product_name" validate:"required,max=50"`
 	ProductHsn  string `json:"product_hsn" validate:"required,max=50"`
 	ProductQty  string `json:"product_qty" validate:"required,max=50"`
 	ProductUnit string `json:"product_unit" validate:"required,max=50"`

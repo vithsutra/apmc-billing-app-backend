@@ -25,7 +25,7 @@ func NewProductRepo(db *sql.DB) *ProductRepo {
 }
 
 func (p *ProductRepo) CreateProduct(r *http.Request) error {
-	var product models.Products
+	var product models.Product
 
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		return err
