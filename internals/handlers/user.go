@@ -18,6 +18,7 @@ func NewUserHandler(UserRepo models.UserInterface) *UserHandler {
 }
 
 func (uh *UserHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	res, err := uh.UserRepo.Login(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -29,6 +30,7 @@ func (uh *UserHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uh *UserHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	res, err := uh.UserRepo.Register(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -40,6 +42,7 @@ func (uh *UserHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uh *UserHandler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	if err := uh.UserRepo.DeleteUser(r); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})

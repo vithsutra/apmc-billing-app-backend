@@ -19,6 +19,7 @@ func NewProductHandler(productRepo models.ProductInterface) *ProductHandler {
 }
 
 func (handler *ProductHandler) CreateProductHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	if err := handler.ProductRepo.CreateProduct(r); err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -31,6 +32,7 @@ func (handler *ProductHandler) CreateProductHandler(w http.ResponseWriter, r *ht
 }
 
 func (handler *ProductHandler) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	if err := handler.ProductRepo.DeleteProduct(r); err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)

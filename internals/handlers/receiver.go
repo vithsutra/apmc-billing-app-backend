@@ -19,6 +19,7 @@ func NewReceiverHandler(receiverRepo models.ReceiverInterface) *ReceiverHandler 
 }
 
 func (handler *ReceiverHandler) CreateReceiverHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	if err := handler.receiverRepo.CreateReceiver(r); err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -31,6 +32,7 @@ func (handler *ReceiverHandler) CreateReceiverHandler(w http.ResponseWriter, r *
 }
 
 func (handler *ReceiverHandler) DeleteReceiverHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	if err := handler.receiverRepo.DeleteReceiver(r); err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -43,6 +45,7 @@ func (handler *ReceiverHandler) DeleteReceiverHandler(w http.ResponseWriter, r *
 }
 
 func (handler *ReceiverHandler) GetReceiversHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	receivers, err := handler.receiverRepo.GetReceivers(r)
 	if err != nil {
 		log.Println(err)
