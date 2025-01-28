@@ -52,3 +52,10 @@ func ProductRouters(r *Router) {
 	r.mux.HandleFunc("/create/product", productHandler.CreateProductHandler).Methods("POST")
 	r.mux.HandleFunc("/delete/product/{product_id}", productHandler.DeleteProductHandler).Methods("DELETE")
 }
+
+func InvoiceRouters(r *Router) {
+	invoiceHandler := handlers.NewInvoiceHandler(repository.NewInvoiceRepo(r.db))
+	r.mux.HandleFunc("/create/invoice", invoiceHandler.CreateInvoiceHandler).Methods("POST")
+	r.mux.HandleFunc("/delete/invoice/{invoice_id}", invoiceHandler.DeleteInvoiceHandler).Methods("DELETE")
+	r.mux.HandleFunc("/get/invoices/{user_id}", invoiceHandler.GetInvoicesHandler).Methods("GET")
+}

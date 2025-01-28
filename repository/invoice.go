@@ -24,27 +24,28 @@ func NewInvoiceRepo(db *sql.DB) *InvoiceRepo {
 	}
 }
 
-func (repo *InvoiceRepo) CreateInvoice(r *http.Request) error {
+func (repo *InvoiceRepo) CreateInvoice(r *http.Request) (string, error) {
 	var invoice models.Invoice
 
 	if err := json.NewDecoder(r.Body).Decode(&invoice); err != nil {
-		return err
+		return "", errors.New("error occurred while decoding")
 	}
 
 	if err := validator.Validate(invoice); err != nil {
-		return err
+		return "", err
 	}
 
 	invoice.InvoiceId = uuid.NewString()
+	invoice.PaymentStatus = false
 
 	query := database.NewQuery(repo.db)
 
 	if err := query.CreateInvoice(&invoice); err != nil {
 		log.Println(err)
-		return err
+		return "", errors.New("error occurred with database")
 	}
 
-	return nil
+	return invoice.InvoiceId, nil
 }
 
 func (repo *InvoiceRepo) DeleteInvoice(r *http.Request) error {
@@ -64,4 +65,24 @@ func (repo *InvoiceRepo) DeleteInvoice(r *http.Request) error {
 	}
 
 	return nil
+}
+
+func (repo *InvoiceRepo) GetInvoices(r *http.Request) ([]*models.InvoiceResponse, error) {
+	vars := mux.Vars(r)
+	userId := vars["user_id"]
+
+	if userId == "" {
+		return nil, errors.New("user id cannot be empty")
+	}
+
+	query := database.NewQuery(repo.db)
+
+	invoices, err := query.GetInvoices(userId)
+
+	if err != nil {
+		log.Println(err)
+		return nil, errors.New("error occurred with database")
+	}
+
+	return invoices, nil
 }

@@ -39,6 +39,8 @@ func (q *Query) InitilizeDatabase() error {
 		)`,
 		`CREATE TABLE IF NOT EXISTS invoice(
 			invoice_id VARCHAR(100) PRIMARY KEY,
+			name VARCHAR(100) NOT NULL,
+			payment_status BOOLEAN NOT NULL,
 			user_id VARCHAR(100) NOT NULL,
 			billed_id VARCHAR(100) NOT NULL,
 			shipped_id VARCHAR(100) NOT NULL,
