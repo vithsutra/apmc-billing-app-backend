@@ -42,7 +42,6 @@ func NewProduct(request *ProductRequest) (*Product, error) {
 	productRate, err := strconv.Atoi(request.ProductRate)
 
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 

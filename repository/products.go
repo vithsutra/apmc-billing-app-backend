@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/vsynclabs/billsoft/internals/models"
 	"github.com/vsynclabs/billsoft/pkg/database"
@@ -25,16 +24,22 @@ func NewProductRepo(db *sql.DB) *ProductRepo {
 }
 
 func (p *ProductRepo) CreateProduct(r *http.Request) error {
-	var product models.Product
+	var productRequest models.ProductRequest
 
-	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&productRequest); err != nil {
 		return err
 	}
 	validate := validator.New()
-	if err := validate.Struct(product); err != nil {
+	if err := validate.Struct(productRequest); err != nil {
 		return err
 	}
-	product.ProductId = uuid.NewString()
+
+	product, err := models.NewProduct(&productRequest)
+
+	if err != nil {
+		log.Println(err)
+		return errros.New
+	}
 	query := database.NewQuery(p.db)
 	if err := query.CreateProduct(&product); err != nil {
 		log.Println(err)
