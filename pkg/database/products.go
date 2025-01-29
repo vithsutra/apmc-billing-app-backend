@@ -10,8 +10,9 @@ func (q *Query) CreateProduct(product *models.Product) error {
 		product_quantity,
 		product_unit,
 		product_rate,
-		invoice_id
-	)VALUES ($1,$2,$3,$4,$5,$6,$7)`
+		product_totoal,
+		invoice_id,
+	)VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`
 	_, err := q.db.Exec(query,
 		product.ProductId,
 		product.ProductName,
@@ -19,6 +20,7 @@ func (q *Query) CreateProduct(product *models.Product) error {
 		product.ProductQty,
 		product.ProductUnit,
 		product.ProductRate,
+		product.Total,
 		product.InvoiceId,
 	)
 	return err
