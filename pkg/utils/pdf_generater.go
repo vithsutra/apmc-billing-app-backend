@@ -37,11 +37,11 @@ func GeneratePdf(
 		Unit:     gopdf.UnitCM,
 	})
 
-	if err := pdf.AddTTFFont("bold-font", "./pkg/utils/Roboto/static/Roboto-Bold.ttf"); err != nil {
+	if err := pdf.AddTTFFont("bold-font", "./font-family/Roboto/static/Roboto-Bold.ttf"); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := pdf.AddTTFFont("light-font", "./pkg/utils/Roboto/static/Roboto-Regular.ttf"); err != nil {
+	if err := pdf.AddTTFFont("light-font", "./font-family/Roboto/static/Roboto-Regular.ttf"); err != nil {
 		log.Fatal(err)
 	}
 
