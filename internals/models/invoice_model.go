@@ -1,22 +1,101 @@
 package models
 
-import "net/http"
+import (
+	"net/http"
+	"time"
 
-type Invoice struct {
-	InvoiceId     string `json:"invoice_id"`
-	Name          string `json:"name" validate:"required,max=100"`
-	PaymentStatus bool   `json:"payment_status"`
-	UserId        string `json:"user_id" validate:"required,max=100"`
-	ReceiverId    string `json:"receiver_id" validate:"required,max=100"`
-	ConsigneeId   string `json:"consignee_id" validate:"required,max=100"`
-	InvoiceDate   string `json:"invoice_date" validate:"required,max=50"`
-	SupplyDate    string `json:"supply_date" validate:"required,max=50"`
+	"github.com/google/uuid"
+)
+
+type InvoiceRequest struct {
+	InvoiceName          string `json:"invoice_name" validate:"required,max=100"`
+	InvoiceReverseCharge string `json:"invoice_reverse_charge" validate:"required,max=20"`
+	InvoiceState         string `json:"invoice_state" validate:"required,max=50"`
+	InvoiceStateCode     string `json:"invoice_state_code" validate:"required,max=20"`
+	InvoiceChallanNumber string `json:"invoice_challan_number" validate:"required,max=50"`
+	InvoiceVehicleNumber string `json:"invoice_vehicle_number" validate:"required,max=50"`
+	InvoiceDateOfSupply  string `json:"invoice_date_of_supply" validate:"required,max=50"`
+	InvoicePlaceOfSupply string `json:"invoice_place_of_supply" validate:"required,max=50"`
+	UserId               string `json:"user_id" validate:"required,max=100"`
+	ReceiverId           string `json:"receiver_id" validate:"required,max=100"`
+	ConsigneeId          string `json:"consignee_id" validate:"required,max=100"`
 }
 
 type InvoiceResponse struct {
 	InvoiceId     string `json:"invoice_id" validate:"required,max=100"`
 	Name          string `json:"name" validate:"required,max=100"`
 	PaymentStatus bool   `json:"payment_status" validate:"required"`
+}
+
+type Invoice struct {
+	InvoiceId              string
+	InvoiceName            string
+	InvoicePaymentStatus   bool
+	InvoiceReverseRecharge string
+	InvoiceNumber          int32
+	InvoiceDate            string
+	InvoiceState           string
+	InvoiceStateCode       string
+	InvoiceChallanNumber   string
+	InvoiceVehicleNumber   string
+	InvoiceDateOfSupply    string
+	InvoicePlaceOfSupply   string
+	UserId                 string
+	BilledId               string
+	ShippedId              string
+}
+
+func NewInvoice(request *InvoiceRequest) *Invoice {
+	invoiceId := uuid.New().String()
+	invoicePaymentStatus := false
+	invoiceDate := time.Now().Format("02/01/2006")
+
+	return &Invoice{
+		InvoiceId:              invoiceId,
+		InvoiceName:            request.InvoiceName,
+		InvoicePaymentStatus:   invoicePaymentStatus,
+		InvoiceReverseRecharge: request.InvoiceReverseCharge,
+		InvoiceDate:            invoiceDate,
+		InvoiceState:           request.InvoiceState,
+		InvoiceStateCode:       request.InvoiceStateCode,
+		InvoiceChallanNumber:   request.InvoiceChallanNumber,
+		InvoiceVehicleNumber:   request.InvoiceVehicleNumber,
+		InvoiceDateOfSupply:    request.InvoiceDateOfSupply,
+		InvoicePlaceOfSupply:   request.InvoicePlaceOfSupply,
+		UserId:                 request.UserId,
+		BilledId:               request.ReceiverId,
+		ShippedId:              request.ConsigneeId,
+	}
+}
+
+type InvoicePdf struct {
+	UserName             string
+	UserAddress          string
+	UserPhone            string
+	UserEmail            string
+	UserGstin            string
+	UserPan              string
+	InvoiceReverseCharge string
+	InvoiceNumber        string
+	InvoiceDate          string
+	InvoiceState         string
+	InvoiceStateCode     string
+	InvoiceChallanNumber string
+	InvoiceVehicleNumber string
+	InvoiceDateOfSupply  string
+	InvoicePlaceOfSupply string
+	ReceiverName         string
+	ReceiverAdddress     string
+	ReceiverGstin        string
+	ReceiverState        string
+	ReceiverStateCode    string
+	ConsigneeName        string
+	ConsigneeAddress     string
+	ConsigneeGstin       string
+	ConsigneeMobile      string
+	ConsigneeState       string
+	ConsigneeStateCode   string
+	products             []*Product
 }
 
 type InvoiceInterface interface {

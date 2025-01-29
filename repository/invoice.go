@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/vsynclabs/billsoft/internals/models"
 	"github.com/vsynclabs/billsoft/pkg/database"
@@ -25,24 +24,23 @@ func NewInvoiceRepo(db *sql.DB) *InvoiceRepo {
 }
 
 func (repo *InvoiceRepo) CreateInvoice(r *http.Request) (string, error) {
-	var invoice models.Invoice
+	var invoiceRequest models.InvoiceRequest
 
-	if err := json.NewDecoder(r.Body).Decode(&invoice); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&invoiceRequest); err != nil {
 		return "", errors.New("error occurred while decoding")
 	}
 
 	validate := validator.New()
 
-	if err := validate.Struct(invoice); err != nil {
-		return "", err
+	if err := validate.Struct(invoiceRequest); err != nil {
+		return "", errors.New("invalid request format")
 	}
 
-	invoice.InvoiceId = uuid.NewString()
-	invoice.PaymentStatus = false
+	invoice := models.NewInvoice(&invoiceRequest)
 
 	query := database.NewQuery(repo.db)
 
-	if err := query.CreateInvoice(&invoice); err != nil {
+	if err := query.CreateInvoice(invoice); err != nil {
 		log.Println(err)
 		return "", errors.New("error occurred with database")
 	}
