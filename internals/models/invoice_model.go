@@ -95,7 +95,7 @@ type InvoicePdf struct {
 	ConsigneeMobile      string
 	ConsigneeState       string
 	ConsigneeStateCode   string
-	products             []*Product
+	Products             []*ProductPdf
 }
 
 type InvoiceInterface interface {
