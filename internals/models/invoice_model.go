@@ -95,6 +95,7 @@ type InvoicePdf struct {
 	ConsigneeMobile      string
 	ConsigneeState       string
 	ConsigneeStateCode   string
+	GrandTotal           string
 	Products             []*ProductPdf
 }
 
@@ -102,4 +103,5 @@ type InvoiceInterface interface {
 	CreateInvoice(*http.Request) (string, error)
 	DeleteInvoice(*http.Request) error
 	GetInvoices(*http.Request) ([]*InvoiceResponse, error)
+	DownloadInvoice(*http.Request) (*InvoicePdf, error)
 }
