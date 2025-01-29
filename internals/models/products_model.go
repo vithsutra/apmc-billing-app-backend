@@ -1,6 +1,12 @@
 package models
 
-import "net/http"
+import (
+	"log"
+	"net/http"
+	"strconv"
+
+	"github.com/google/uuid"
+)
 
 type ProductRequest struct {
 	ProductId   string `json:"product_id"`
@@ -21,6 +27,38 @@ type Product struct {
 	ProductRate string
 	InvoiceId   string
 	Total       string
+}
+
+func NewProduct(request *ProductRequest) (*Product, error) {
+	productId := uuid.New().String()
+
+	productQty, err := strconv.Atoi(request.ProductQty)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	productRate, err := strconv.Atoi(request.ProductRate)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	productTotal := productQty * productRate
+
+	return &Product{
+		ProductId:   productId,
+		ProductName: request.ProductName,
+		ProductHsn:  request.ProductHsn,
+		ProductQty:  request.ProductQty,
+		ProductUnit: request.ProductUnit,
+		ProductRate: request.ProductRate,
+		InvoiceId:   request.InvoiceId,
+		Total:       strconv.Itoa(productTotal),
+	}, nil
+
 }
 
 type ProductPdf struct {
