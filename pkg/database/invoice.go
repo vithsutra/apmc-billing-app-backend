@@ -78,7 +78,39 @@ func (q *Query) GetInvoices(userId string) ([]*models.InvoiceResponse, error) {
 
 func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 
-	query1 := `SELECT `
+	query1 := `SELECT
+				product_name,
+				product_hsn,
+				product_quantity,
+				product_unit,
+				product_rate,
+				product_total
+			FROM product WHERE invoice_id=$1`
+
+	rows, err := q.db.Query(query1, invoiceId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var productPdfs []models.ProductPdf
+
+	for rows.Next() {
+		var productPdf models.ProductPdf
+
+		if err := rows.Scan(
+			&productPdf.ProductName,
+			&productPdf.ProductHsn,
+			&productPdf.ProductQty,
+			&productPdf.ProductUnit,
+			&productPdf.ProductRate,
+			&productPdf.Total,
+		); err != nil {
+			return nil, err
+		}
+
+		productPdfs = append(productPdfs, productPdf)
+	}
 
 	query2 := `SELECT
 				u.user_name,
@@ -118,13 +150,11 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 
 			WHERE i.invoice_id=$1
 			`
-	rows, err := q.db.Query(query, invoiceId)
+	var invoicePdf models.InvoicePdf
+	err = q.db.QueryRow(query2, invoiceId).Scan()
 
 	if err != nil {
 		return nil, err
 	}
 
-	for rows.Next() {
-
-	}
 }
