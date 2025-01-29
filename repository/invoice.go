@@ -86,3 +86,25 @@ func (repo *InvoiceRepo) GetInvoices(r *http.Request) ([]*models.InvoiceResponse
 
 	return invoices, nil
 }
+
+func (repo *InvoiceRepo) DownloadInvoice(r *http.Request) (*models.InvoicePdf, error) {
+	vars := mux.Vars(r)
+
+	invoiceId := vars["invoice_id"]
+
+	if invoiceId == "" {
+		return nil, errors.New("invoice id cannot be empty")
+	}
+
+	query := database.NewQuery(repo.db)
+
+	invoicePdf, err := query.DownloadInvoice(invoiceId)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return invoicePdf, nil
+
+}

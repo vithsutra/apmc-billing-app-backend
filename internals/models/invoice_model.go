@@ -100,8 +100,8 @@ type InvoicePdf struct {
 }
 
 type InvoiceInterface interface {
-	CreateInvoice(*http.Request) (string, error)
-	DeleteInvoice(*http.Request) error
-	GetInvoices(*http.Request) ([]*InvoiceResponse, error)
-	DownloadInvoice(*http.Request) (*InvoicePdf, error)
+	CreateInvoice(r *http.Request) (string, error)
+	DeleteInvoice(r *http.Request) error
+	GetInvoices(r *http.Request) ([]*InvoiceResponse, error)
+	DownloadInvoice(r *http.Request) (*InvoicePdf, error)
 }

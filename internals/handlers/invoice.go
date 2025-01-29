@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/vsynclabs/billsoft/internals/models"
+	"github.com/vsynclabs/billsoft/pkg/utils"
 )
 
 type InvoiceHandler struct {
@@ -53,4 +54,19 @@ func (handler *InvoiceHandler) GetInvoicesHandler(w http.ResponseWriter, r *http
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string][]*models.InvoiceResponse{"invoices": invoices})
+}
+
+func (handler *InvoiceHandler) DownloadInvoiceHandler(w http.ResponseWriter, r *http.Request) {
+
+	invoicePdf, err := handler.invoiceRepo.DownloadInvoice(r)
+
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	utils.GeneratePdf(w, invoicePdf)
 }

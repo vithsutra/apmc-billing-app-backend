@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"internal/itoa"
 	"log"
 	"net/http"
 
@@ -24,33 +23,7 @@ func findMainHeaderCordinates(pdf *gopdf.GoPdf, spacing float64, text string) (f
 
 func GeneratePdf(
 	w http.ResponseWriter,
-	trader_name string,
-	trader_address string,
-	trader_phone string,
-	trader_email string,
-	trader_gstin string,
-	trader_pan string,
-	reverse_charge string,
-	invoice_number string,
-	invoice_date string,
-	state string,
-	state_code string,
-	challan_number string,
-	vehicle_number string,
-	date_of_supply string,
-	place_of_supply string,
-	receiver_name string,
-	receiver_adddress string,
-	receiver_gstin string,
-	receiver_state string,
-	receiver_state_code string,
-	consignee_name string,
-	consignee_address string,
-	consignee_gstin string,
-	consignee_mobile string,
-	consignee_state string,
-	consignee_state_code string,
-	products []*models.Product,
+	invoicePdf *models.InvoicePdf,
 ) {
 	pdf := gopdf.GoPdf{}
 
@@ -68,12 +41,12 @@ func GeneratePdf(
 	}
 
 	pdf.AddHeader(func() {
-		header1 := trader_name
-		header2 := trader_address
-		header3 := trader_phone
-		header4 := trader_email
-		header5 := "GSTIN:" + trader_gstin
-		header6 := "PAN No:" + trader_pan
+		header1 := invoicePdf.UserName
+		header2 := invoicePdf.UserAddress
+		header3 := invoicePdf.UserPhone
+		header4 := invoicePdf.UserEmail
+		header5 := "GSTIN:" + invoicePdf.UserGstin
+		header6 := "PAN No:" + invoicePdf.UserPan
 
 		OuterBorderSection(&pdf)
 
@@ -145,29 +118,10 @@ func GeneratePdf(
 
 	invoiceInfoSection(
 		&pdf,
-		reverse_charge,
-		invoice_number,
-		invoice_date,
-		state,
-		state_code,
-		challan_number,
-		vehicle_number,
-		date_of_supply,
-		place_of_supply,
-		receiver_name,
-		receiver_adddress,
-		receiver_gstin,
-		receiver_state,
-		receiver_state_code,
-		consignee_name,
-		consignee_address,
-		consignee_gstin,
-		consignee_mobile,
-		consignee_state,
-		consignee_state_code,
+		invoicePdf,
 	)
 
-	createProductsTableSection(&pdf, products)
+	createProductsTableSection(&pdf, invoicePdf)
 
 	pdf.WritePdf("hello.pdf")
 
@@ -216,26 +170,7 @@ func OuterBorderSection(pdf *gopdf.GoPdf) {
 
 func invoiceInfoSection(
 	pdf *gopdf.GoPdf,
-	reverse_charge string,
-	invoice_number string,
-	invoice_date string,
-	state string,
-	state_code string,
-	challan_number string,
-	vehicle_number string,
-	date_of_supply string,
-	place_of_supply string,
-	receiver_name string,
-	receiver_adddress string,
-	receiver_gstin string,
-	receiver_state string,
-	receiver_state_code string,
-	consignee_name string,
-	consignee_address string,
-	consignee_gstin string,
-	consignee_mobile string,
-	consignee_state string,
-	consignee_state_code string,
+	invoicePdf *models.InvoicePdf,
 ) {
 
 	if err := pdf.SetFont("light-font", "", 9); err != nil {
@@ -250,55 +185,55 @@ func invoiceInfoSection(
 	pdf.SetXY(1.2, 6.5)
 	pdf.Text("Reverse Charge ")
 	pdf.SetXY(6, 6.5)
-	pdf.Text(": " + reverse_charge)
+	pdf.Text(": " + invoicePdf.InvoiceReverseCharge)
 
 	x, y := 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Invoice No. ")
 	pdf.SetXY(6, y)
-	pdf.Text(": " + invoice_number)
+	pdf.Text(": " + invoicePdf.InvoiceNumber)
 
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Invoice Date")
 	pdf.SetXY(6, y)
-	pdf.Text(": " + invoice_date)
+	pdf.Text(": " + invoicePdf.InvoiceDate)
 
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("State")
 	pdf.SetXY(6, y)
-	pdf.Text(": " + state)
+	pdf.Text(": " + invoicePdf.InvoiceState)
 
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("State Code")
 	pdf.SetXY(6, y)
-	pdf.Text(": " + state_code)
+	pdf.Text(": " + invoicePdf.InvoiceStateCode)
 
 	x, y = (PAGE_WIDTH/2)+0.2, 6.5
 	pdf.SetXY(x, y)
 	pdf.Text("Challan No.")
 	pdf.SetXY(x+4.8, y)
-	pdf.Text(": " + challan_number)
+	pdf.Text(": " + invoicePdf.InvoiceChallanNumber)
 
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.6
 	pdf.SetXY(x, y)
 	pdf.Text("Vehicle No.")
 	pdf.SetXY(x+4.8, y)
-	pdf.Text(": " + vehicle_number)
+	pdf.Text(": " + invoicePdf.InvoiceVehicleNumber)
 
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.6
 	pdf.SetXY(x, y)
 	pdf.Text("Date of Supply")
 	pdf.SetXY(x+4.8, y)
-	pdf.Text(": " + date_of_supply)
+	pdf.Text(": " + invoicePdf.InvoiceDateOfSupply)
 
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.6
 	pdf.SetXY(x, y)
 	pdf.Text("Place of Supply")
 	pdf.SetXY(x+4.8, y)
-	pdf.Text(": " + place_of_supply)
+	pdf.Text(": " + invoicePdf.InvoicePlaceOfSupply)
 
 	pdf.SetFillColor(174, 224, 254)
 	y = pdf.GetY() + 0.5
@@ -340,72 +275,72 @@ func invoiceInfoSection(
 	pdf.SetXY(x, y)
 	pdf.Text("Name")
 	pdf.SetXY(3.5, y)
-	pdf.Text(":	" + receiver_name)
+	pdf.Text(":	" + invoicePdf.ReceiverName)
 
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Address")
 	pdf.SetXY(3.5, y)
-	pdf.Text(":	" + receiver_adddress)
+	pdf.Text(":	" + invoicePdf.ReceiverAdddress)
 
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("GSTIN")
 	pdf.SetXY(3.5, y)
-	pdf.Text(": " + receiver_gstin)
+	pdf.Text(": " + invoicePdf.ReceiverGstin)
 
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("State")
 	pdf.SetXY(3.5, y)
-	pdf.Text(": " + receiver_state)
+	pdf.Text(": " + invoicePdf.ReceiverState)
 
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("State Code")
 	pdf.SetXY(3.5, y)
-	pdf.Text(": " + receiver_state_code)
+	pdf.Text(": " + invoicePdf.ReceiverStateCode)
 
 	//next section
 	x, y = (PAGE_WIDTH/2)+0.2, 10.3
 	pdf.SetXY(x, y)
 	pdf.Text("Name")
 	pdf.SetXY(x+2.3, y)
-	pdf.Text(": " + consignee_name)
+	pdf.Text(": " + invoicePdf.ConsigneeName)
 
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Address")
 	pdf.SetXY(x+2.3, y)
-	pdf.Text(": " + consignee_address)
+	pdf.Text(": " + invoicePdf.ConsigneeAddress)
 
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("GSTIN")
 	pdf.SetXY(x+2.3, y)
-	pdf.Text(": " + consignee_gstin)
+	pdf.Text(": " + invoicePdf.ConsigneeGstin)
 
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Mobile")
 	pdf.SetXY(x+2.3, y)
-	pdf.Text(": " + consignee_mobile)
+	pdf.Text(": " + invoicePdf.ConsigneeMobile)
 
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("State")
 	pdf.SetXY(x+2.3, y)
-	pdf.Text(": " + consignee_state)
+	pdf.Text(": " + invoicePdf.ConsigneeState)
 
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.6
 	pdf.SetXY(x, y)
 	pdf.Text("State Code")
 	pdf.SetXY(x+2.3, y)
-	pdf.Text(": " + consignee_state_code)
+	pdf.Text(": " + invoicePdf.ConsigneeStateCode)
 
 }
 
-func createProductFooterSection(pdf *gopdf.GoPdf) {
+func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf) {
 	pdf.Line(1, PAGE_HEIGHT-4, 20, PAGE_HEIGHT-4)
 	pdf.Line((PAGE_WIDTH/2)+1.5, PAGE_HEIGHT-4, (PAGE_WIDTH/2)+1.5, PAGE_HEIGHT-1)
 
@@ -426,7 +361,7 @@ func createProductFooterSection(pdf *gopdf.GoPdf) {
 
 	text1 := "Certified that the particular given above are true"
 	text2 := "and correct"
-	text3 := "For, SRI SHIVA TRADER"
+	text3 := "For, " + invoicePdf.UserName
 	text4 := "Authorised Signatory"
 
 	text1Width, err := pdf.MeasureTextWidth(text1)
@@ -528,7 +463,7 @@ func createProductFooterSection(pdf *gopdf.GoPdf) {
 		log.Fatal(err)
 	}
 
-	text1 = "₹6,32,500.00"
+	text1 = "₹" + invoicePdf.GrandTotal
 
 	text1Width, err = pdf.MeasureTextWidth(text1)
 
@@ -562,7 +497,7 @@ func createProductFooterSection(pdf *gopdf.GoPdf) {
 	pdf.Text(text1)
 
 	center = ((PAGE_WIDTH / 2) + ((PAGE_WIDTH / 2) + 1.5)) / 2
-	text1 = "250"
+	text1 = "0000"
 
 	text1Width, err = pdf.MeasureTextWidth(text1)
 
@@ -573,7 +508,7 @@ func createProductFooterSection(pdf *gopdf.GoPdf) {
 	pdf.SetXY(center-(text1Width/2), PAGE_HEIGHT-6.28)
 	pdf.Text(text1)
 
-	text1 = "₹6,32,500.00"
+	text1 = "₹" + invoicePdf.GrandTotal
 	text1Width, err = pdf.MeasureTextWidth(text1)
 
 	if err != nil {
@@ -863,7 +798,7 @@ func createProductRowSection(pdf *gopdf.GoPdf, rowHeight float64, serialNumber s
 	pdf.SetY(prevY + rowHeight)
 }
 
-func createProductsTableSection(pdf *gopdf.GoPdf, products []models.Product) {
+func createProductsTableSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf) {
 
 	mainPageThreshold1 := 12
 	mainPageThreshold2 := 19
@@ -872,21 +807,21 @@ func createProductsTableSection(pdf *gopdf.GoPdf, products []models.Product) {
 
 	prevY := pdf.GetY()
 
-	productsLength := len(products)
+	productsLength := len(invoicePdf.Products)
 
 	log.Println(productsLength)
 
 	if productsLength <= mainPageThreshold1 {
 		createProductTableMainPageHeadingSection(pdf, true)
-		createProductFooterSection(pdf)
+		createProductFooterSection(pdf, invoicePdf)
 
 		pdf.SetY(prevY + 1.3)
 
 		totoalRowHeight := PAGE_HEIGHT - (6.75 + pdf.GetY())
 		singleRowHeight := totoalRowHeight / 12
 
-		for index, product := range products {
-			createProductRowSection(pdf, singleRowHeight, itoa.Itoa(index+1), product.ProductName, product.ProductHsn, product.ProductQty, product.ProductUnit, product.ProductRate, "0000")
+		for _, product := range invoicePdf.Products {
+			createProductRowSection(pdf, singleRowHeight, "0", product.ProductName, product.ProductHsn, product.ProductQty, product.ProductUnit, product.ProductRate, product.Total)
 		}
 	} else if productsLength <= mainPageThreshold2 {
 		createProductTableMainPageHeadingSection(pdf, false)
@@ -895,13 +830,13 @@ func createProductsTableSection(pdf *gopdf.GoPdf, products []models.Product) {
 		totoalRowHeight := PAGE_HEIGHT - (6.75 + pdf.GetY())
 		singleRowHeight := totoalRowHeight / 12
 
-		for index, product := range products {
-			createProductRowSection(pdf, singleRowHeight, itoa.Itoa(index+1), product.ProductName, product.ProductHsn, product.ProductQty, product.ProductUnit, product.ProductRate, "0000")
+		for _, product := range invoicePdf.Products {
+			createProductRowSection(pdf, singleRowHeight, "0", product.ProductName, product.ProductHsn, product.ProductQty, product.ProductUnit, product.ProductRate, product.Total)
 		}
 
 		pdf.AddPage()
 		createProductTableSubPageHeadingSection(pdf, true)
-		createProductFooterSection(pdf)
+		createProductFooterSection(pdf, invoicePdf)
 
 	} else {
 
@@ -912,7 +847,7 @@ func createProductsTableSection(pdf *gopdf.GoPdf, products []models.Product) {
 		singleRowHeight := totoalRowHeight / float64(mainPageThreshold1)
 
 		for i := 0; i < mainPageThreshold2; i++ {
-			createProductRowSection(pdf, singleRowHeight, itoa.Itoa(i+1), products[i].ProductName, products[i].ProductHsn, products[i].ProductQty, products[i].ProductUnit, products[i].ProductRate, "0000")
+			createProductRowSection(pdf, singleRowHeight, "0", invoicePdf.Products[i].ProductName, invoicePdf.Products[i].ProductHsn, invoicePdf.Products[i].ProductQty, invoicePdf.Products[i].ProductUnit, invoicePdf.Products[i].ProductRate, invoicePdf.Products[i].Total)
 		}
 
 		productsLength = productsLength - mainPageThreshold2
@@ -928,7 +863,7 @@ func createProductsTableSection(pdf *gopdf.GoPdf, products []models.Product) {
 		totoalRowHeight2 := PAGE_HEIGHT - 5.6 - 6.75
 		singleRowHeight2 := totoalRowHeight2 / float64(subPageThreshold1)
 
-		for i := mainPageThreshold2; i < len(products); i++ {
+		for i := mainPageThreshold2; i < len(invoicePdf.Products); i++ {
 			if pageCounter > subPageThreshold2-1 {
 				pageCounter = 0
 			}
@@ -936,7 +871,7 @@ func createProductsTableSection(pdf *gopdf.GoPdf, products []models.Product) {
 				pdf.AddPage()
 				if productsLength <= subPageThreshold1 {
 					createProductTableSubPageHeadingSection(pdf, true)
-					createProductFooterSection(pdf)
+					createProductFooterSection(pdf, invoicePdf)
 					pageWithFooter = true
 				} else {
 					createProductTableSubPageHeadingSection(pdf, false)
@@ -946,9 +881,9 @@ func createProductsTableSection(pdf *gopdf.GoPdf, products []models.Product) {
 			}
 
 			if pageWithFooter {
-				createProductRowSection(pdf, singleRowHeight2, itoa.Itoa(i+1), products[i].ProductName, products[i].ProductHsn, products[i].ProductQty, products[i].ProductUnit, products[i].ProductRate, "0000")
+				createProductRowSection(pdf, singleRowHeight2, "0", invoicePdf.Products[i].ProductName, invoicePdf.Products[i].ProductHsn, invoicePdf.Products[i].ProductQty, invoicePdf.Products[i].ProductUnit, invoicePdf.Products[i].ProductRate, invoicePdf.Products[i].Total)
 			} else {
-				createProductRowSection(pdf, singleRowHeight1, itoa.Itoa(i+1), products[i].ProductName, products[i].ProductHsn, products[i].ProductQty, products[i].ProductUnit, products[i].ProductRate, "0000")
+				createProductRowSection(pdf, singleRowHeight1, "0", invoicePdf.Products[i].ProductName, invoicePdf.Products[i].ProductHsn, invoicePdf.Products[i].ProductQty, invoicePdf.Products[i].ProductUnit, invoicePdf.Products[i].ProductRate, invoicePdf.Products[i].Total)
 			}
 
 			pageCounter++
@@ -958,7 +893,7 @@ func createProductsTableSection(pdf *gopdf.GoPdf, products []models.Product) {
 		if !pageWithFooter {
 			pdf.AddPage()
 			createProductTableSubPageHeadingSection(pdf, true)
-			createProductFooterSection(pdf)
+			createProductFooterSection(pdf, invoicePdf)
 		}
 	}
 }

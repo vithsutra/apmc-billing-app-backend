@@ -1,6 +1,8 @@
 package database
 
 import (
+	"strconv"
+
 	"github.com/vsynclabs/billsoft/internals/models"
 )
 
@@ -93,7 +95,9 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 		return nil, err
 	}
 
-	var productPdfs []models.ProductPdf
+	var productPdfs []*models.ProductPdf
+
+	var grandTotal int32 = 0
 
 	for rows.Next() {
 		var productPdf models.ProductPdf
@@ -109,7 +113,15 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 			return nil, err
 		}
 
-		productPdfs = append(productPdfs, productPdf)
+		total, err := strconv.Atoi(productPdf.Total)
+
+		if err != nil {
+			return nil, err
+		}
+
+		grandTotal += int32(total)
+
+		productPdfs = append(productPdfs, &productPdf)
 	}
 
 	query2 := `SELECT
@@ -151,10 +163,45 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 			WHERE i.invoice_id=$1
 			`
 	var invoicePdf models.InvoicePdf
-	err = q.db.QueryRow(query2, invoiceId).Scan()
+
+	invoicePdf.GrandTotal = strconv.Itoa(int(grandTotal))
+	invoicePdf.Products = productPdfs
+	var invoiceNumber int32
+	err = q.db.QueryRow(query2, invoiceId).Scan(
+		&invoicePdf.UserName,
+		&invoicePdf.UserAddress,
+		&invoicePdf.UserPhone,
+		&invoicePdf.UserEmail,
+		&invoicePdf.UserGstin,
+		&invoicePdf.UserPan,
+		&invoicePdf.InvoiceReverseCharge,
+		&invoiceNumber,
+		&invoicePdf.InvoiceDate,
+		&invoicePdf.InvoiceState,
+		&invoicePdf.InvoiceStateCode,
+		&invoicePdf.InvoiceChallanNumber,
+		&invoicePdf.InvoiceVehicleNumber,
+		&invoicePdf.InvoiceDateOfSupply,
+		&invoicePdf.InvoicePlaceOfSupply,
+		&invoicePdf.ReceiverName,
+		&invoicePdf.ReceiverAdddress,
+		&invoicePdf.ReceiverGstin,
+		&invoicePdf.ReceiverState,
+		&invoicePdf.ReceiverStateCode,
+		&invoicePdf.ConsigneeName,
+		&invoicePdf.ConsigneeAddress,
+		&invoicePdf.ConsigneeGstin,
+		&invoicePdf.ConsigneeMobile,
+		&invoicePdf.ConsigneeState,
+		&invoicePdf.ConsigneeStateCode,
+	)
 
 	if err != nil {
 		return nil, err
 	}
+
+	invoicePdf.InvoiceNumber = strconv.Itoa(int(invoiceNumber))
+
+	return &invoicePdf, nil
 
 }

@@ -38,10 +38,11 @@ func (p *ProductRepo) CreateProduct(r *http.Request) error {
 
 	if err != nil {
 		log.Println(err)
-		return errros.New
+		return errors.New("error converting string to number")
 	}
+
 	query := database.NewQuery(p.db)
-	if err := query.CreateProduct(&product); err != nil {
+	if err := query.CreateProduct(product); err != nil {
 		log.Println(err)
 		return err
 	}
