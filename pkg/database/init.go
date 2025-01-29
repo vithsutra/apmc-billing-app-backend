@@ -64,6 +64,7 @@ func (q *Query) InitilizeDatabase() error {
 			product_quantity VARCHAR(100) NOT NULL,
 			product_unit VARCHAR(100) NOT NULL,
 			product_rate VARCHAR(100) NOT NULL,
+			product_totoal VARCHAR(100) NOT NULL,
 			invoice_id VARCHAR(100) NOT NULL,
 			FOREIGN KEY (invoice_id) REFERENCES invoice(invoice_id) ON DELETE CASCADE
 		)`,
