@@ -67,6 +67,7 @@ func (handler *InvoiceHandler) DownloadInvoiceHandler(w http.ResponseWriter, r *
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/pdf")
 	w.WriteHeader(http.StatusOK)
 	utils.GeneratePdf(w, invoicePdf)
 }

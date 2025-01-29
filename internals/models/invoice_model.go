@@ -95,6 +95,7 @@ type InvoicePdf struct {
 	ConsigneeMobile      string
 	ConsigneeState       string
 	ConsigneeStateCode   string
+	TotalQty             string
 	GrandTotal           string
 	Products             []*ProductPdf
 }

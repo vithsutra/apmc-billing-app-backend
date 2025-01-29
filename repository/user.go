@@ -24,19 +24,19 @@ func NewUserRepo(db *sql.DB) *UserRepo {
 }
 
 func (ur *UserRepo) Login(r *http.Request) (string, error) {
-	var user models.User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	var userLoginRequest models.UserLoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&userLoginRequest); err != nil {
 		log.Println(err)
 		return "", err
 	}
 
 	validate := validator.New()
 
-	if err := validate.Struct(user); err != nil {
+	if err := validate.Struct(userLoginRequest); err != nil {
 		return "", err
 	}
 	query := database.NewQuery(ur.db)
-	tk, err := query.Login(user.UserEmail, user.UserPassword)
+	tk, err := query.Login(userLoginRequest.UserEmail, userLoginRequest.UserPassword)
 	if err != nil {
 		return "", err
 	}

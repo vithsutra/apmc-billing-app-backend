@@ -1,6 +1,7 @@
 package database
 
 import (
+	"log"
 	"strconv"
 
 	"github.com/vsynclabs/billsoft/internals/models"
@@ -21,7 +22,7 @@ func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 				invoice_place_of_supply,
 				user_id,
 				billed_id,
-				shipped_id,
+				shipped_id
 				) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`
 	_, err := q.db.Exec(
 		query,
@@ -53,7 +54,7 @@ func (q *Query) DeleteInvoice(invoiceId string) error {
 }
 
 func (q *Query) GetInvoices(userId string) ([]*models.InvoiceResponse, error) {
-	query := `SELECT invoice_id,name,payment_status FROM invoice WHERE user_id = $1`
+	query := `SELECT invoice_id,invoice_name,invoice_payment_status FROM invoice WHERE user_id = $1`
 
 	rows, err := q.db.Query(query, userId)
 
@@ -98,6 +99,7 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 	var productPdfs []*models.ProductPdf
 
 	var grandTotal int32 = 0
+	var totalQty int32 = 0
 
 	for rows.Next() {
 		var productPdf models.ProductPdf
@@ -113,13 +115,21 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 			return nil, err
 		}
 
-		total, err := strconv.Atoi(productPdf.Total)
+		totalPrice, err := strconv.Atoi(productPdf.Total)
 
 		if err != nil {
 			return nil, err
 		}
 
-		grandTotal += int32(total)
+		grandTotal += int32(totalPrice)
+
+		productQty, err := strconv.Atoi(productPdf.ProductQty)
+
+		if err != nil {
+			log.Println(err)
+		}
+
+		totalQty += int32(productQty)
 
 		productPdfs = append(productPdfs, &productPdf)
 	}
@@ -157,16 +167,19 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 
 			FROM invoice i
 			JOIN users u ON i.user_id=u.user_id
-		 	JOIN billed r ON i.billed_id=r.billed_id,
+		 	JOIN billed r ON i.billed_id=r.billed_id
 			JOIN shipped c ON i.shipped_id=c.shipped_id
 
 			WHERE i.invoice_id=$1
 			`
 	var invoicePdf models.InvoicePdf
 
+	invoicePdf.TotalQty = strconv.Itoa(int(totalQty))
 	invoicePdf.GrandTotal = strconv.Itoa(int(grandTotal))
+
 	invoicePdf.Products = productPdfs
 	var invoiceNumber int32
+
 	err = q.db.QueryRow(query2, invoiceId).Scan(
 		&invoicePdf.UserName,
 		&invoicePdf.UserAddress,

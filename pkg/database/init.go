@@ -42,7 +42,7 @@ func (q *Query) InitilizeDatabase() error {
 			invoice_name VARCHAR(100) NOT NULL,
 			invoice_payment_status BOOLEAN NOT NULL,
 			invoice_reverse_charge VARCHAR(100)NOT NULL,
-			invoice_number INTEGER AUTO_INCREMENT,
+			invoice_number SERIAL UNIQUE,
 			invoice_date VARCHAR(100) NOT NULL,
 			invoice_state VARCHAR(100) NOT NULL,
 			invoice_state_code VARCHAR(100) NOT NULL,

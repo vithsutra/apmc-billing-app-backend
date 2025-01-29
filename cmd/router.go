@@ -60,4 +60,5 @@ func InvoiceRouters(r *Router) {
 	r.mux.HandleFunc("/create/invoice", invoiceHandler.CreateInvoiceHandler).Methods("POST")
 	r.mux.HandleFunc("/delete/invoice/{invoice_id}", invoiceHandler.DeleteInvoiceHandler).Methods("DELETE")
 	r.mux.HandleFunc("/get/invoices/{user_id}", invoiceHandler.GetInvoicesHandler).Methods("GET")
+	r.mux.HandleFunc("/download/invoice/{invoice_id}", invoiceHandler.DownloadInvoiceHandler).Methods("GET")
 }
