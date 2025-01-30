@@ -40,7 +40,7 @@ func (handler *InvoiceHandler) DeleteInvoiceHandler(w http.ResponseWriter, r *ht
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "user deleted successfully"})
+	json.NewEncoder(w).Encode(map[string]string{"message": "invoice deleted successfully"})
 }
 
 func (handler *InvoiceHandler) GetInvoicesHandler(w http.ResponseWriter, r *http.Request) {
