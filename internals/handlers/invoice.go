@@ -71,3 +71,16 @@ func (handler *InvoiceHandler) DownloadInvoiceHandler(w http.ResponseWriter, r *
 	w.WriteHeader(http.StatusOK)
 	utils.GeneratePdf(w, invoicePdf)
 }
+
+func (handler *InvoiceHandler) UpdateInvoicePaymentStatusHandler(w http.ResponseWriter, r *http.Request) {
+	if err := handler.invoiceRepo.UpdateInvoiceStatus(r); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "payment status updated successfully"})
+}

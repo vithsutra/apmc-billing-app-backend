@@ -104,5 +104,6 @@ type InvoiceInterface interface {
 	CreateInvoice(r *http.Request) (string, error)
 	DeleteInvoice(r *http.Request) error
 	GetInvoices(r *http.Request) ([]*InvoiceResponse, error)
+	UpdateInvoiceStatus(r *http.Request) error
 	DownloadInvoice(r *http.Request) (*InvoicePdf, error)
 }

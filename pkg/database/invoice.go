@@ -218,3 +218,9 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 	return &invoicePdf, nil
 
 }
+
+func (q *Query) UpdatePaymentStatus(invoiceId string) error {
+	query := `UPDATE invoice SET invoice_payment_status = TRUE WHERE invoice_id=$1`
+	_, err := q.db.Exec(query, invoiceId)
+	return err
+}

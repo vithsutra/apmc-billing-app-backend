@@ -108,3 +108,22 @@ func (repo *InvoiceRepo) DownloadInvoice(r *http.Request) (*models.InvoicePdf, e
 	return invoicePdf, nil
 
 }
+
+func (repo *InvoiceRepo) UpdateInvoiceStatus(r *http.Request) error {
+	vars := mux.Vars(r)
+
+	invoiceId := vars["invoice_id"]
+
+	if invoiceId == "" {
+		return errors.New("invoice id cannot be empty")
+	}
+
+	query := database.NewQuery(repo.db)
+
+	if err := query.UpdatePaymentStatus(invoiceId); err != nil {
+		log.Println(err)
+		return errors.New("error occurred with database")
+	}
+
+	return nil
+}
