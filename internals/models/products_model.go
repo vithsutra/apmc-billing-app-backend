@@ -19,14 +19,14 @@ type ProductRequest struct {
 }
 
 type Product struct {
-	ProductId   string
-	ProductName string
-	ProductHsn  string
-	ProductQty  string
-	ProductUnit string
-	ProductRate string
-	InvoiceId   string
-	Total       string
+	ProductId   string `json:"product_id"`
+	ProductName string `json:"product_name"`
+	ProductHsn  string `json:"product_hsn"`
+	ProductQty  string `json:"product_qty"`
+	ProductUnit string `json:"product_unit"`
+	ProductRate string `json:"product_rate"`
+	InvoiceId   string `json:"invoice_id"`
+	Total       string `json:"total"`
 }
 
 func NewProduct(request *ProductRequest) (*Product, error) {
