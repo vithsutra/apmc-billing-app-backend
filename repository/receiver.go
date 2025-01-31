@@ -54,7 +54,7 @@ func (repo *ReceiverRepo) DeleteReceiver(r *http.Request) error {
 	receiverId := vars["receiver_id"]
 
 	if receiverId == "" {
-		return errors.New("Receiver id cannot empty")
+		return errors.New("receiver id cannot empty")
 	}
 
 	query := database.NewQuery(repo.db)

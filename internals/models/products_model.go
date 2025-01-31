@@ -72,4 +72,5 @@ type ProductPdf struct {
 type ProductInterface interface {
 	CreateProduct(*http.Request) error
 	DeleteProduct(*http.Request) error
+	GetProduct(r *http.Request) ([]*Product, error)
 }

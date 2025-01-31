@@ -52,7 +52,7 @@ func (c *ConsigneeRepo) DeleteConsignee(r *http.Request) error {
 	consigneeId := vars["consignee_id"]
 
 	if consigneeId == "" {
-		return errors.New("Consignee id cannot empty")
+		return errors.New("consignee id cannot empty")
 	}
 
 	query := database.NewQuery(c.db)

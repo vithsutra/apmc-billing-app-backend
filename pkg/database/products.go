@@ -31,3 +31,43 @@ func (q *Query) DeleteProduct(productId string) error {
 	_, err := q.db.Exec(query, productId)
 	return err
 }
+
+func (q *Query) GetProduct(invoiceId string) ([]*models.Product, error) {
+	query := `SELECT 
+				product_id,
+				product_name,
+				product_hsn,
+				product_quantity,
+				product_unit,
+				product_rate,
+				product_total
+			FROM product WHERE invoice_id=$1`
+
+	rows, err := q.db.Query(query, invoiceId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var products []*models.Product
+
+	for rows.Next() {
+		var product models.Product
+
+		if err := rows.Scan(
+			&product.ProductId,
+			&product.ProductName,
+			&product.ProductHsn,
+			&product.ProductQty,
+			&product.ProductUnit,
+			&product.ProductRate,
+			&product.Total,
+		); err != nil {
+			return nil, err
+		}
+		products = append(products, &product)
+
+	}
+
+	return products, nil
+}
