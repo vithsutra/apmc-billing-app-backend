@@ -338,3 +338,54 @@ HTTP Response Format
     "message": "invoice deleted successfully"
 }
 ```
+
+## 13. Get Products
+
+```bash
+https://apmc.api.vsensetech.in/get/products/<INVOICE_ID>
+```
+
+### HTTP Method → GET
+
+HTTP Response Format
+
+```json
+{
+    "receiver_details": [
+        {
+            "ProductId": "4f69262c-7228-41f1-8287-bec6d201907f",
+            "ProductName": "Maize",
+            "ProductHsn": "90",
+            "ProductQty": "3",
+            "ProductUnit": "3",
+            "ProductRate": "120",
+            "InvoiceId": "",
+            "Total": "360"
+        },
+        {
+            "ProductId": "e1d182be-2829-4115-9eb8-c99e413c15c0",
+            "ProductName": "Paddy",
+            "ProductHsn": "9",
+            "ProductQty": "3",
+            "ProductUnit": "99",
+            "ProductRate": "2000",
+            "InvoiceId": "",
+            "Total": "6000"
+        }
+    ]
+}
+```
+
+## 14. Update Payment Status To Done
+
+```bash
+https://apmc.api.vsensetech.in/update/invoice/payment/<INVOICE_ID>
+```
+
+### HTTP Method → PATCH
+
+```json
+{
+    "message": "payment status updated successfully"
+}
+```
