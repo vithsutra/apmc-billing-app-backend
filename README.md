@@ -353,24 +353,24 @@ HTTP Response Format
 {
     "receiver_details": [
         {
-            "ProductId": "4f69262c-7228-41f1-8287-bec6d201907f",
-            "ProductName": "Maize",
-            "ProductHsn": "90",
-            "ProductQty": "3",
-            "ProductUnit": "3",
-            "ProductRate": "120",
-            "InvoiceId": "",
-            "Total": "360"
+            "product_id": "4f69262c-7228-41f1-8287-bec6d201907f",
+            "product_name": "Maize",
+            "product_hsn": "90",
+            "product_qty": "3",
+            "product_unit": "3",
+            "product_rate": "120",
+            "invoice_id": "",
+            "total": "360"
         },
         {
-            "ProductId": "e1d182be-2829-4115-9eb8-c99e413c15c0",
-            "ProductName": "Paddy",
-            "ProductHsn": "9",
-            "ProductQty": "3",
-            "ProductUnit": "99",
-            "ProductRate": "2000",
-            "InvoiceId": "",
-            "Total": "6000"
+            "product_id": "e1d182be-2829-4115-9eb8-c99e413c15c0",
+            "product_name": "Paddy",
+            "product_hsn": "9",
+            "product_qty": "3",
+            "product_unit": "99",
+            "product_rate": "2000",
+            "invoice_id": "",
+            "total": "6000"
         }
     ]
 }
