@@ -43,3 +43,16 @@ func (handler *ProductHandler) DeleteProductHandler(w http.ResponseWriter, r *ht
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "product deleted successfully"})
 }
+
+func (handler *ProductHandler) GetProductHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	products, err := handler.ProductRepo.GetProduct(r)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"message": "error occurrred"})
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string][]*models.Product{"receiver_details": products})
+}

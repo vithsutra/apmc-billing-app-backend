@@ -49,7 +49,7 @@ func (handler *ReceiverHandler) GetReceiversHandler(w http.ResponseWriter, r *ht
 	receivers, err := handler.receiverRepo.GetReceivers(r)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"message": "error occurrred"})
 		return
 	}

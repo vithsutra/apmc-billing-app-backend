@@ -64,3 +64,21 @@ func (p *ProductRepo) DeleteProduct(r *http.Request) error {
 	}
 	return nil
 }
+
+func (p *ProductRepo) GetProduct(r *http.Request) ([]*models.Product, error) {
+	vars := mux.Vars(r)
+	invoiceId := vars["invoice_id"]
+
+	if invoiceId == "" {
+		return nil, errors.New("invoice  id  cannot be empty")
+	}
+	query := database.NewQuery(p.db)
+
+	products, err := query.GetProduct(invoiceId)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return products, nil
+}
