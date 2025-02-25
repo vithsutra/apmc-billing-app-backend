@@ -62,7 +62,7 @@ jobs:
             docker pull $IMAGE_NAME
             docker ps | apmc-billing-app-backend | awk '{print $1}' | xargs -r docker kill
             docker ps -a | grep  apmc-billing-app-backend | awk '{print $1}' | xargs -r docker rm
-            docker run -d -p 9090:8080 --name apmc-billing-app-backend --env-file ~/billing-app/billing-app-deployment/.env $IMAGE_NAME
+            docker run -d -p 8081:8080 --name apmc-billing-app-backend --env-file ~/billing-app/billing-app-deployment/.env $IMAGE_NAME
 
 
 
