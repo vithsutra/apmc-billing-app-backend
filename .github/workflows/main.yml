@@ -60,7 +60,7 @@ jobs:
            script: |
             IMAGE_NAME=docker.io/vithsutratechnologies/apmc-billing-app-backend:latest
             docker pull $IMAGE_NAME
-            docker ps | apmc-billing-app-backend | awk '{print $1}' | xargs -I {} docker kill {}
+            docker ps | grep apmc-billing-app-backend | awk '{print $1}' | xargs -I {} docker kill {}
             docker ps -a | grep apmc-billing-app-backend | awk '{print $1}' | xargs -I  {} docker rm {}
             docker run -d -p 8081:8080 --name apmc-billing-app-backend --env-file ~/billing-app/billing-app-deployment/.env $IMAGE_NAME
 
