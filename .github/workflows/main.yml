@@ -1,0 +1,71 @@
+name: apmc-billing-cicd
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: build server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: authentication with dockerHub
+        run: echo "${{secrets.DOCKERHUB_PASSWORD}}"| docker login -u "${{secrets.DOCKERHUB_USERNAME}}" --password-stdin
+
+      - name: build and push docker image
+        run: |
+          IMAGE_NAME=docker.io/vithsutratechnologies/apmc-billing-app-backend:latest
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
+
+  deploy:
+    name: deploy docker-image to GCE
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: create .env file
+        run: |
+          echo "DATABASE_URL=${{secrets.DATABASE_URL}}" >> .env
+          echo "ADDRESS=${{secrets.ADDRESS}}" >> .env
+          echo "SERVER_MODE=${{secrets.SERVER_MODE}}" >> .env
+
+      - name: setup deployment in GCE
+        uses: appleboy/ssh-action@v0.1.10s
+        with: 
+          host: "${{secrets.GCP_INSTANCE_HOST}}"
+          username: "${{secrets.GCP_INSTANCE_USERNAME}}"
+          key: "${{secrets.GCP_SSH_KEY}}"
+          script: |
+            echo "connected to vm"
+            mkdir -p ~/billing-app/billing-app-deployment
+      - name: upload .env to vm
+        run: |
+          echo "${{secrets.GCP_SSH_KEY}}" > biometric_ssh_key
+          chmod 600 biometric_ssh_key
+          scp -o StrictHostKeyChecking=no -i biometric_ssh_key .env ${{ secrets.GCP_INSTANCE_USERNAME }}@${{ secrets.GCP_INSTANCE_HOST }}:~/billing-app/billing-app-deployment/.env
+          rm biometric_ssh_key
+
+      - name: deploy docker image into GCE
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+           host: "${{ secrets.GCP_INSTANCE_HOST }}"
+           username: "${{ secrets.GCP_INSTANCE_USERNAME }}"
+           key: "${{ secrets.GCE_SSH_PRIVATE_KEY }}"
+           script: |
+            IMAGE_NAME=docker.io/vithsutratechnologies/apmc-billing-app-backend:latest
+            docker pull $IMAGE_NAME
+            docker ps | apmc-billing-app-backend | awk '{print $1}' | xargs -r docker kill
+            docker ps -a | grep  apmc-billing-app-backend | awk '{print $1}' | xargs -r docker rm
+            docker run -d -p 8080:8080 --name apmc-billing-app-backend --env-file ~/billing-app/billing-app-deployment/.env $IMAGE_NAME
+
+
+
+
+
+
