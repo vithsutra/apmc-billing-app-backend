@@ -20,10 +20,11 @@ func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 				invoice_vehicle_number,
 				invoice_date_of_supply,
 				invoice_place_of_supply,
+				invoice_gst,
 				user_id,
 				billed_id,
 				shipped_id
-				) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`
+				) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`
 	_, err := q.db.Exec(
 		query,
 		invoice.InvoiceId,
@@ -37,6 +38,7 @@ func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 		invoice.InvoiceVehicleNumber,
 		invoice.InvoiceDateOfSupply,
 		invoice.InvoicePlaceOfSupply,
+		invoice.InvoiceGst,
 		invoice.UserId,
 		invoice.BilledId,
 		invoice.ShippedId,
@@ -136,11 +138,9 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 
 	query2 := `SELECT
 				u.user_name,
-				u.user_address,
 				u.user_phone,
 				u.user_email,
-				u.user_gstin,
-				u.user_pan,
+			
 
 				i.invoice_reverse_charge,
 				i.invoice_number,
@@ -151,6 +151,7 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 				i.invoice_vehicle_number,
 				i.invoice_date_of_supply,
 				i.invoice_place_of_supply,
+				i.invoice_gst,
 
 				r.billed_name,
 				r.billed_address,
@@ -182,11 +183,9 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 
 	err = q.db.QueryRow(query2, invoiceId).Scan(
 		&invoicePdf.UserName,
-		&invoicePdf.UserAddress,
 		&invoicePdf.UserPhone,
 		&invoicePdf.UserEmail,
-		&invoicePdf.UserGstin,
-		&invoicePdf.UserPan,
+
 		&invoicePdf.InvoiceReverseCharge,
 		&invoiceNumber,
 		&invoicePdf.InvoiceDate,
@@ -196,6 +195,7 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 		&invoicePdf.InvoiceVehicleNumber,
 		&invoicePdf.InvoiceDateOfSupply,
 		&invoicePdf.InvoicePlaceOfSupply,
+		&invoicePdf.InvoiceGst,
 		&invoicePdf.ReceiverName,
 		&invoicePdf.ReceiverAdddress,
 		&invoicePdf.ReceiverGstin,

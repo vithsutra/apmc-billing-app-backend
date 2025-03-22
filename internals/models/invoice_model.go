@@ -16,6 +16,7 @@ type InvoiceRequest struct {
 	InvoiceVehicleNumber string `json:"invoice_vehicle_number" validate:"required,max=50"`
 	InvoiceDateOfSupply  string `json:"invoice_date_of_supply" validate:"required,max=50"`
 	InvoicePlaceOfSupply string `json:"invoice_place_of_supply" validate:"required,max=50"`
+	InvoiceGst           string `json:"invoice_gst" validate:"required,max=50"`
 	UserId               string `json:"user_id" validate:"required,max=100"`
 	ReceiverId           string `json:"receiver_id" validate:"required,max=100"`
 	ConsigneeId          string `json:"consignee_id" validate:"required,max=100"`
@@ -40,6 +41,7 @@ type Invoice struct {
 	InvoiceVehicleNumber   string
 	InvoiceDateOfSupply    string
 	InvoicePlaceOfSupply   string
+	InvoiceGst             string
 	UserId                 string
 	BilledId               string
 	ShippedId              string
@@ -62,6 +64,7 @@ func NewInvoice(request *InvoiceRequest) *Invoice {
 		InvoiceVehicleNumber:   request.InvoiceVehicleNumber,
 		InvoiceDateOfSupply:    request.InvoiceDateOfSupply,
 		InvoicePlaceOfSupply:   request.InvoicePlaceOfSupply,
+		InvoiceGst:             request.InvoiceGst,
 		UserId:                 request.UserId,
 		BilledId:               request.ReceiverId,
 		ShippedId:              request.ConsigneeId,
@@ -84,6 +87,7 @@ type InvoicePdf struct {
 	InvoiceVehicleNumber string
 	InvoiceDateOfSupply  string
 	InvoicePlaceOfSupply string
+	InvoiceGst           string
 	ReceiverName         string
 	ReceiverAdddress     string
 	ReceiverGstin        string

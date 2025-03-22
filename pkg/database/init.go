@@ -9,10 +9,7 @@ func (q *Query) InitilizeDatabase() error {
 		`CREATE TABLE IF NOT EXISTS users(
 			user_id VARCHAR(100) PRIMARY KEY,
 			user_name VARCHAR(100) NOT NULL,
-			user_address VARCHAR(500) NOT NULL,
 			user_phone VARCHAR(100) NOT NULL,
-			user_gstin VARCHAR(100) NOT NULL,
-			user_pan VARCHAR(100) NOT NULL,
 			user_email VARCHAR(200) NOT NULL UNIQUE,
 			user_password VARCHAR(100) NOT NULL
 		)`,
@@ -26,6 +23,21 @@ func (q *Query) InitilizeDatabase() error {
 			user_id VARCHAR(100) NOT NULL,
 			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 		)`,
+
+		`CREATE TABLE IF NOT EXISTS biller (
+			biller_id VARCHAR(100) PRIMARY KEY,
+			biller_name VARCHAR(100) NOT NULL,
+			biller_address VARCHAR(500) NOT NULL,
+			biller_mobile VARCHAR(100) NOT NULL,
+			biller_gstin VARCHAR(100) NOT NULL,
+			biller_pan VARCHAR(100) NOT NULL,
+			biller_mail VARCHAR(100) NOT NULL,
+			biller_companylogo VARCHAR(100) NOT NULL DEFAULT 'PENDING',
+			user_id VARCHAR(100) NOT NULL,
+			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+
+		)`,
+
 		`CREATE TABLE IF NOT EXISTS shipped(
 			shipped_id VARCHAR(100) PRIMARY KEY,
 			shipped_name VARCHAR(100) NOT NULL,
@@ -37,6 +49,7 @@ func (q *Query) InitilizeDatabase() error {
 			user_id VARCHAR(100) NOT NULL,
 			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 		)`,
+
 		`CREATE TABLE IF NOT EXISTS invoice(
 			invoice_id VARCHAR(100) PRIMARY KEY,
 			invoice_name VARCHAR(100) NOT NULL,
@@ -50,6 +63,7 @@ func (q *Query) InitilizeDatabase() error {
 			invoice_vehicle_number VARCHAR(100) NOT NULL,
 			invoice_date_of_supply VARCHAR(100),
 			invoice_place_of_supply VARCHAR(100),
+			invoice_gst VARCHAR(100) NOT NULL,
 			user_id VARCHAR(100) NOT NULL,
 			billed_id VARCHAR(100) NOT NULL,
 			shipped_id VARCHAR(100) NOT NULL,
@@ -83,6 +97,7 @@ func (q *Query) InitilizeDatabase() error {
 	for _, query := range queries {
 		_, err = tx.Exec(query)
 		if err != nil {
+			log.Printf("Failed Query: %s\nError: %v", query, err)
 			return err
 		}
 	}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/vsynclabs/billsoft/internals/handlers"
+	"github.com/vsynclabs/billsoft/pkg/storage"
 	"github.com/vsynclabs/billsoft/repository"
 )
 
@@ -24,6 +25,7 @@ func NewRouter(conn *Connection) *Router {
 	ReceiverRouters(router)
 	ProductRouters(router)
 	InvoiceRouters(router)
+	BillerRouters(router)
 	return router
 }
 
@@ -36,7 +38,7 @@ func UserRouters(r *Router) {
 }
 
 func ConsigneeRouters(r *Router) {
-	ConsigneeHandler := handlers.NewConsigneeHandler(repository.NeeConsigneeRepo(r.db))
+	ConsigneeHandler := handlers.NewConsigneeHandler(repository.NewConsigneeRepo(r.db))
 	r.mux.HandleFunc("/create/consignee", ConsigneeHandler.CreateConsigneeHandler).Methods("POST")
 	r.mux.HandleFunc("/delete/consignee/{consignee_id}", ConsigneeHandler.DeleteConsigneeHandler).Methods("DELETE")
 	r.mux.HandleFunc("/get/consignees/{user_id}", ConsigneeHandler.GetConsigneeHandler).Methods("GET")
@@ -63,4 +65,14 @@ func InvoiceRouters(r *Router) {
 	r.mux.HandleFunc("/get/invoices/{user_id}", invoiceHandler.GetInvoicesHandler).Methods("GET")
 	r.mux.HandleFunc("/update/invoice/payment/{invoice_id}", invoiceHandler.UpdateInvoicePaymentStatusHandler).Methods("PATCH")
 	r.mux.HandleFunc("/download/invoice/{invoice_id}", invoiceHandler.DownloadInvoiceHandler).Methods("GET")
+}
+func BillerRouters(r *Router) {
+	s3Repo := &storage.AwsS3Repo{}
+	billerHandler := handlers.NewBillerHandler(repository.NewBillerRepo(r.db, s3Repo))
+	r.mux.HandleFunc("/create/biller", billerHandler.CreateBillerHandler).Methods("POST")
+	r.mux.HandleFunc("/delete/biller/{biller_id}", billerHandler.DeleteBillerHandler).Methods("DELETE")
+	r.mux.HandleFunc("/get/billers/{user_id}", billerHandler.GetBillerHandler).Methods("GET")
+	r.mux.HandleFunc("/upload/company/logo", billerHandler.UploadCompanyLogoHandler).Methods("POST")
+	r.mux.HandleFunc("/delete/company/logo", billerHandler.DeleteCompanyLogoHandler).Methods("DELETE")
+
 }

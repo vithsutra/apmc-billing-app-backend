@@ -18,7 +18,7 @@ type ConsigneeRepo struct {
 	db *sql.DB
 }
 
-func NeeConsigneeRepo(db *sql.DB) *ConsigneeRepo {
+func NewConsigneeRepo(db *sql.DB) *ConsigneeRepo {
 	return &ConsigneeRepo{
 		db: db,
 	}

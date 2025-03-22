@@ -44,16 +44,13 @@ func (q *Query) Register(user models.User) (string, error) {
 			user_name,
 			user_email,
 			user_password,
-			user_address,
-			user_phone,
-			user_gstin,
-			user_pan
+			user_phone
+
 		) VALUES(
-		 	$1 , $2 , $3 , $4 , $5 , $6 , $7 , $8
+		 	$1 , $2 , $3 , $4 , $5 
 		)
 	`,
-		user.UserId, user.UserName, user.UserEmail, pass,
-		user.UserAddress, user.UserPhone, user.UserGSTIN, user.UserPAN,
+		user.UserId, user.UserName, user.UserEmail, pass, user.UserPhone,
 	)
 	if err != nil {
 		return "", err
