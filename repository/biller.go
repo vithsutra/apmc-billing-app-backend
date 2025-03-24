@@ -30,7 +30,6 @@ func NewBillerRepo(db *sql.DB, s3Client *storage.AwsS3Repo) *BillerRepo {
 	}
 }
 
-// CreateBiller handles creating a new biller
 func (b *BillerRepo) CreateBiller(r *http.Request) error {
 	var biller models.Biller
 
@@ -53,7 +52,6 @@ func (b *BillerRepo) CreateBiller(r *http.Request) error {
 	return nil
 }
 
-// DeleteBiller deletes a biller from the database
 func (b *BillerRepo) DeleteBiller(r *http.Request) error {
 	vars := mux.Vars(r)
 	billerId := vars["biller_id"]
@@ -70,7 +68,6 @@ func (b *BillerRepo) DeleteBiller(r *http.Request) error {
 	return nil
 }
 
-// GetBiller retrieves a biller from the database
 func (repo *BillerRepo) GetBiller(r *http.Request) ([]*models.Biller, error) {
 	vars := mux.Vars(r)
 	userId := vars["user_id"]
@@ -90,11 +87,11 @@ func (repo *BillerRepo) GetBiller(r *http.Request) ([]*models.Biller, error) {
 
 func (repo *BillerRepo) UploadCompanyLogo(r *http.Request) error {
 	vars := mux.Vars(r)
-	log.Println("Extracted Vars:", vars) // Debug log
+	log.Println("Extracted Vars:", vars)
 
 	userId, ok := vars["userId"]
 	if !ok || userId == "" {
-		log.Println("Error: userId not found in URL") // Debugging
+		log.Println("Error: userId not found in URL")
 		return errors.New("missing userId in URL parameters")
 	}
 
@@ -102,14 +99,12 @@ func (repo *BillerRepo) UploadCompanyLogo(r *http.Request) error {
 
 	log.Println("Received Content-Type:", r.Header.Get("Content-Type"))
 
-	// Parse multipart form (10MB limit)
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		log.Println("Error parsing form:", err)
 		return fmt.Errorf("error parsing form: %w", err)
 	}
 
-	// Retrieve the file
 	file, header, err := r.FormFile("logo")
 	if err != nil {
 		log.Println("Error retrieving file:", err)
@@ -119,17 +114,14 @@ func (repo *BillerRepo) UploadCompanyLogo(r *http.Request) error {
 
 	log.Println("Received file:", header.Filename, "Size:", header.Size)
 
-	// Read file into buffer
 	buf := new(bytes.Buffer)
 	if _, err := io.Copy(buf, file); err != nil {
 		log.Println("Error copying file:", err)
 		return fmt.Errorf("error copying file data: %w", err)
 	}
 
-	// Generate unique file name
 	fileName := fmt.Sprintf("%s-%s", userId, header.Filename)
 
-	// Upload to S3
 	if err := repo.s3Client.UploadCompanyLogo(fileName, buf); err != nil {
 		log.Println("Error uploading to S3:", err)
 		return fmt.Errorf("error uploading to S3: %w", err)
@@ -139,7 +131,6 @@ func (repo *BillerRepo) UploadCompanyLogo(r *http.Request) error {
 	return nil
 }
 
-// DeleteCompanyLogo handles deleting company logos from S3
 func (repo *BillerRepo) DeleteCompanyLogo(r *http.Request) error {
 	if repo.s3Client == nil {
 		log.Println("S3 client is not initialized")

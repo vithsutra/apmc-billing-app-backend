@@ -82,6 +82,16 @@ func (q *Query) InitilizeDatabase() error {
 			invoice_id VARCHAR(100) NOT NULL,
 			FOREIGN KEY (invoice_id) REFERENCES invoice(invoice_id) ON DELETE CASCADE
 		)`,
+		`CREATE TABLE IF NOT EXISTS banker(
+			bank_id VARCHAR(100) PRIMARY KEY,
+			bank_name VARCHAR(100) NOT NULL,
+			bank_branch VARCHAR(100) NOT NULL,
+			bank_account_number VARCHAR(100) NOT NULL,
+			bank_ifsc_code VARCHAR(100) NOT NULL,
+			bank_holder_name VARCHAR(100) NOT NULL,
+			user_id VARCHAR(100) NOT NULL,
+			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+		)`,
 	}
 	tx, err := q.db.Begin()
 	if err != nil {

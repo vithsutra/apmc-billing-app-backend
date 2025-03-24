@@ -26,6 +26,7 @@ func NewRouter(conn *Connection) *Router {
 	ProductRouters(router)
 	InvoiceRouters(router)
 	BillerRouters(router.mux, router.db)
+	BankerRouter(router)
 	return router
 }
 func UserRouters(r *Router) {
@@ -75,4 +76,11 @@ func BillerRouters(r *mux.Router, db *sql.DB) {
 	r.HandleFunc("/get/billers/{user_id}", billerHandler.GetBillerHandler).Methods("GET")
 	r.HandleFunc("/upload/company/logo/{userId}", billerHandler.UploadCompanyLogoHandler).Methods("POST")
 	r.HandleFunc("/delete/company/logo/{fileName}", billerHandler.DeleteCompanyLogoHandler).Methods("DELETE")
+}
+
+func BankerRouter(r *Router) {
+	bankerHandler := handlers.NewBankerHandler(repository.NewBankerRepo(r.db))
+	r.mux.HandleFunc("/create/banker", bankerHandler.CreateBankerHandler).Methods("POST")
+	r.mux.HandleFunc("/delete/banker/{banker_id}", bankerHandler.DeleteBankerHandler).Methods("DELETE")
+	r.mux.HandleFunc("/get/bankers/{user_id}", bankerHandler.GetBankerHandler).Methods("GET")
 }
