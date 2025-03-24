@@ -25,10 +25,9 @@ func NewRouter(conn *Connection) *Router {
 	ReceiverRouters(router)
 	ProductRouters(router)
 	InvoiceRouters(router)
-	BillerRouters(router)
+	BillerRouters(router.mux, router.db)
 	return router
 }
-
 func UserRouters(r *Router) {
 	userHandler := handlers.NewUserHandler(repository.NewUserRepo(r.db))
 	r.mux.HandleFunc("/create/user", userHandler.RegisterHandler).Methods("POST")
@@ -66,13 +65,14 @@ func InvoiceRouters(r *Router) {
 	r.mux.HandleFunc("/update/invoice/payment/{invoice_id}", invoiceHandler.UpdateInvoicePaymentStatusHandler).Methods("PATCH")
 	r.mux.HandleFunc("/download/invoice/{invoice_id}", invoiceHandler.DownloadInvoiceHandler).Methods("GET")
 }
-func BillerRouters(r *Router) {
-	s3Repo := &storage.AwsS3Repo{}
-	billerHandler := handlers.NewBillerHandler(repository.NewBillerRepo(r.db, s3Repo))
-	r.mux.HandleFunc("/create/biller", billerHandler.CreateBillerHandler).Methods("POST")
-	r.mux.HandleFunc("/delete/biller/{biller_id}", billerHandler.DeleteBillerHandler).Methods("DELETE")
-	r.mux.HandleFunc("/get/billers/{user_id}", billerHandler.GetBillerHandler).Methods("GET")
-	r.mux.HandleFunc("/upload/company/logo", billerHandler.UploadCompanyLogoHandler).Methods("POST")
-	r.mux.HandleFunc("/delete/company/logo", billerHandler.DeleteCompanyLogoHandler).Methods("DELETE")
 
+func BillerRouters(r *mux.Router, db *sql.DB) {
+	s3Repo := &storage.AwsS3Repo{}
+	billerHandler := handlers.NewBillerHandler(repository.NewBillerRepo(db, s3Repo))
+
+	r.HandleFunc("/create/biller", billerHandler.CreateBillerHandler).Methods("POST")
+	r.HandleFunc("/delete/biller/{biller_id}", billerHandler.DeleteBillerHandler).Methods("DELETE")
+	r.HandleFunc("/get/billers/{user_id}", billerHandler.GetBillerHandler).Methods("GET")
+	r.HandleFunc("/upload/company/logo/{userId}", billerHandler.UploadCompanyLogoHandler).Methods("POST")
+	r.HandleFunc("/delete/company/logo/{fileName}", billerHandler.DeleteCompanyLogoHandler).Methods("DELETE")
 }

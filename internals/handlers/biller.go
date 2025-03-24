@@ -57,6 +57,11 @@ func (bh *BillerHandler) UploadCompanyLogoHandler(w http.ResponseWriter, r *http
 }
 
 func (bh *BillerHandler) DeleteCompanyLogoHandler(w http.ResponseWriter, r *http.Request) {
+	fileName := r.URL.Query().Get("fileName")
+	if fileName == "" {
+		http.Error(w, "fileName is required", http.StatusBadRequest)
+		return
+	}
 	err := bh.BillerRepo.DeleteCompanyLogo(r)
 	if err != nil {
 		log.Println("Delete error:", err)
