@@ -1,62 +1,60 @@
-# APMC BILLING APP HTTP SERVER API
+# Billing Software
 
-## 1. Creating User Account
+# **1. Creating User Account**
 
-```bash
-https://apmc.api.vsensetech.in/create/user
+```jsx
+http://localhost:8000/create/user
 ```
 
-### HTTP Method → POST
+### HTTP METHOD → POST
 
 Request Body format
 
-```json
+```jsx
 {
-    "user_name":"Vithsutra Traders",
-    "user_email":"vithsutra.tech@gmail.com",
-    "user_password":"password",
-    "user_address":"AIET,Mijar,Dakshina Kannnada, 574225",
-    "user_phone":"8088281469",
-    "user_gstin":"1823SJSJ12",
-    "user_pan":"12322KSKS23"
+"user_name":"Vithsutra Traders",
+"[user_email":"vithsutra.tech@gmail.com](mailto:user_email%22:%22vithsutra.tech@gmail.com)",
+"user_password":"password",
+"user_phone":"8088281469"
 }
 ```
 
 HTTP Response format
 
-```json
+```jsx
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzgyMTg1NzAsInVzZXJfaWQiOiI4NzE4NGE0MS1jZGFiLTQxZWUtOWE0Ny1hNGM4OGQxNTg5MDUifQ.uYi55jEfpgdCGfRRkHyYpQrKv2-GdZNra-VCR1hi8VU"
+"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDM3NzU1NjEsInVzZXJfaWQiOiI2NjkxMzczYi1mZDEyLTQzMjEtYWM5ZS00YzZiNjFmYzM5MmIifQ.5hF0-7vLmLKuU8tOsGVOA28RURr6hJzScmTiJgtvEcs"
 }
 ```
 
-## 2. Delete User Account
+# **2. Delete User Account**
 
-```bash
-https://apmc.api.vsensetech.in/delete/<USER_ID>
+```jsx
+http://localhost:8000/delete/{user_id}
+
 ```
 
-### HTTP Method → DELETE
+### **HTTP Method → DELETE**
 
 HTTP Response format
 
-```json
+```jsx
 {
     "message": "User deleted successfully"
 }
 ```
 
-## 2. User Login
+# **3. User Login**
 
-```bash
-https://apmc.api.vsensetech.in/login
+```jsx
+http://localhost:8000/login
 ```
 
-### HTTP Method → POST
+### HTTP METHOD → POST
 
 Request Body format
 
-```json
+```jsx
 {
     "user_email":"vithsutra.tech@gmail.com",
     "user_password":"password"
@@ -65,23 +63,23 @@ Request Body format
 
 HTTP Response Format
 
-```json
+```jsx
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzgyMTkzMDEsInVzZXJfaWQiOiIwNjg0YWYxNy1iZTZiLTQ5YzktYmFlZi1mMjY4ODI0YjQ4NjYifQ.yWh02PRm8571Jd0s0_2h1MvyXI53cR6gcRpeZ3Opymg"
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDM3NzYzNzQsInVzZXJfaWQiOiI4ZTg5YWY4OC03OTZiLTRhNDYtYTlkYS00ZTEzMGZmMTlmYzUifQ.1Gq4VEqwScQFErKlVCZtAmpItmjurVxR438l1jO4rSg"
 }
 ```
 
-## 3. Create Consignee
+# **4. Create Consignee**
 
-```bash
-https://apmc.api.vsensetech.in/create/consignee
+```jsx
+http://localhost:8000/create/consignee
 ```
 
-### HTTP Method → POST
+### HTTP METHOD → POST
 
 Request Body format
 
-```json
+```jsx
 {
     "consignee_name":"Vithsutra",
     "consignee_address":"AIET,Mijar,Dakshina Kannnada, 574225",
@@ -89,140 +87,139 @@ Request Body format
     "consignee_phone_number":"8088281469",
     "consignee_state":"Karnataka",
     "consignee_state_code":"29",
-    "user_id":"0684af17-be6b-49c9-baef-f268824b4866"
+    "user_id":"8e89af88-796b-4a46-a9da-4e130ff19fc5"
 }
 ```
 
-HTTP Response format
+HTTP Response Format
 
-```json
+```jsx
 {"message":"consignee created successfully"}
 ```
 
-## 4. Get All Consignees
+# **5. Get All Consignees**
 
-```bash
-https://apmc.api.vsensetech.in/get/consignees/<USER_ID>
+```jsx
+http://localhost:8000/get/consignees/<USER_ID>
 ```
 
-### HTTP Method → GET
+### HTTP METHOD → GET
 
-HTTP Response format
+HTTP Response Format
 
-```json
+```jsx
 {
-    "consignee_details": [
-        {
-            "consignee_id": "7d0e7ced-ed20-4161-b6c9-3f4da5dec137",
-            "consignee_name": "Vithsutra",
-            "consignee_address": "AIET,Mijar,Dakshina Kannnada, 574225",
-            "consignee_gstin": "19292JSJS",
-            "consignee_phone_number": "8088281469",
-            "consignee_state": "Karnataka",
-            "consignee_state_code": "29",
-            "user_id": ""
-        }
-    ]
+  "consignee_details": [
+    {
+      "consignee_id": "8af9fdfe-381f-4f0d-b76c-98f48e4c9b18",
+      "consignee_name": "Vithsutra",
+      "consignee_address": "AIET,Mijar,Dakshina Kannnada, 574225",
+      "consignee_gstin": "19292JSJS",
+      "consignee_phone_number": "8088281469",
+      "consignee_state": "Karnataka",
+      "consignee_state_code": "29",
+      "user_id": ""
+    }
+  ]
 }
 ```
 
-## 5. Delete Consignee
+# 6. **Delete Consignee**
 
-```bash
-https://apmc.api.vsensetech.in/delete/consignee/<Consignee_ID>
+```jsx
+http://localhost:8000/delete/consignee/<Consignee_ID>
 ```
 
-### HTTP Method → DELETE
+### **HTTP Method → DELETE**
 
 HTTP Response format
 
-```json
+```jsx
 {"message":"Consignee deleted successfully"}
 ```
 
-## 6. Create Receiver
+# **7. Create Receiver**
 
-```bash
-https://apmc.api.vsensetech.in/create/receiver
+```jsx
+http://localhost:8000/create/receiver
 ```
 
-### HTTP Method → POST
+### **HTTP Method → POST**
 
 Request Body format
 
-```json
+```jsx
 {
-    "receiver_name":"Nagabhushan",
-    "receiver_address":"Shimoga,Managala",
+    "receiver_name":"Srujan",
+    "receiver_address":"Shimoga,vidyanagara",
     "receiver_gstin":"1919SKSK",
     "receiver_state":"Karnataka",
     "receiver_state_code":"29",
-    "user_id":"0684af17-be6b-49c9-baef-f268824b4866"
+    "user_id":"8e89af88-796b-4a46-a9da-4e130ff19fc5"
 }
 ```
 
 HTTP Response Format
 
-```json
+```jsx
 {
-    "message": "created receiver successfully"
+  "message": "created receiver successfully"
 }
 ```
 
-## 7. Get All Receivers
+# 8. **Get All Receivers**
 
-```bash
-https://apmc.api.vsensetech.in/get/receivers/<USER_ID>
+```jsx
+http://localhost:8000/get/receivers/<USER_ID>
 ```
 
-### HTTP Method → GET
+### HTTP METHOD → GET
 
 HTTP Response Format
 
-```json
+```jsx
 {
-    "receiver_details": [
-        {
-            "receiver_id": "b663b492-dc43-495c-b3a6-f7ff6290d079",
-            "receiver_name": "Nagabhushan",
-            "receiver_address": "Shimoga,Managala",
-            "receiver_gstin": "1919SKSK",
-            "receiver_state": "Karnataka",
-            "receiver_state_code": "29",
-            "user_id": ""
-        }
-    ]
+  "receiver_details": [
+    {
+      "receiver_id": "32bec541-4b23-45b0-81ce-bcf3878073d1",
+      "receiver_name": "Srujan",
+      "receiver_address": "Shimoga,vidyanagara",
+      "receiver_gstin": "1919SKSK",
+      "receiver_state": "Karnataka",
+      "receiver_state_code": "29",
+      "user_id": ""
+    }
+  ]
 }
-
 ```
 
-## 7. Delete Receiver
+# 9.**Delete Receiver**
 
-```bash
-https://apmc.api.vsensetech.in/delete/receiver/<Reciever_Id>
+```jsx
+http://localhost:8000/delete/receiver/<Reciever_Id>
 ```
 
-### HTTP Method → DELETE
+### **HTTP Method → DELETE**
 
 HTTP Response format
 
-```json
+```jsx
 {
     "message": "receiver deleted successfully"
 }
 ```
 
-## 8. Create Invoice
+# **10. Create Invoice**
 
-```bash
-https://apmc.api.vsensetech.in/create/invoice
+```jsx
+http://localhost:8000/create/invoice
 ```
 
-### HTTP Method → POST
+### **HTTP Method → POST**
 
 Request Body format
 
-```json
+```jsx
 {
   "invoice_name":"Vithsutra Invoice",
   "invoice_reverse_charge":"no",
@@ -232,160 +229,404 @@ Request Body format
   "invoice_vehicle_number":"1290 20 202",
   "invoice_date_of_supply":"21/3/2025",
   "invoice_place_of_supply":"AIET Mijar",
-  "user_id":"1bd05614-861f-4438-842a-647bc5c96ef2",
-  "receiver_id":"7000db5a-5b3b-4ee3-82bb-809cc9835a74",
-  "consignee_id":"00338768-4a00-408e-96e9-fed17c30923d"
+  "invoice_gst":"18",
+  "user_id":"8e89af88-796b-4a46-a9da-4e130ff19fc5",
+  "receiver_id":"721f4a3a-79d5-4517-9199-f5c2f66fb535",
+  "consignee_id":"8af9fdfe-381f-4f0d-b76c-98f48e4c9b18"
 }
 ```
 
 HTTP Response Format
 
-```json
+```jsx
 {
-    "invoice_id": "749ca101-91e6-4cf5-843c-29cdc072c8a5"
+  "invoice_id": "83e0ee54-5f9b-4536-88ae-9f3cb0e55798"
 }
 ```
 
-## 9. Create Product
+# 11.Delete Invoice
 
-```bash
-https://apmc.api.vsensetech.in/create/product
+```jsx
+http://localhost:8000/delete/invoice/<Invoice_ID>
 ```
 
-### HTTP Method → POST
+### **HTTP Method → DELETE**
+
+HTTP Response Format
+
+```jsx
+{
+    "message": "invoice deleted successfully"
+}
+```
+
+# 12.Get Invoice
+
+```jsx
+http://localhost:8000/get/invoices/<USER_ID>
+```
+
+### **HTTP Method → GET**
+
+HTTP Response Format
+
+```jsx
+{
+  "invoices": [
+    {
+      "invoice_id": "435a9b43-c721-42a7-8513-1190620492f8",
+      "name": "Vithsutra Invoice",
+      "payment_status": false
+    },
+    {
+      "invoice_id": "83e0ee54-5f9b-4536-88ae-9f3cb0e55798",
+      "name": "Vithsutra Invoice",
+      "payment_status": false
+    }
+  ]
+}
+```
+
+# 13.**Download Invoice PDF**
+
+```jsx
+http://localhost:8000/download/invoice/<INVOICE_ID>
+```
+
+### **HTTP Method → GET**
+
+Response will be PDF file
+
+# 14.Create Product
+
+```jsx
+http://localhost:8000/create/product
+```
+
+### HTTP Method →POST
 
 Request Body format
 
-```json
+```jsx
 {
     "product_name":"Paddy",
     "product_hsn":"90",
     "product_qty":"3",
     "product_unit":"3",
     "product_rate":"120",
-    "invoice_id":"749ca101-91e6-4cf5-843c-29cdc072c8a5"
+    "invoice_id":"83e0ee54-5f9b-4536-88ae-9f3cb0e55798"
 }
 ```
 
 HTTP Response Format
 
-```json
+```jsx
 {
     "message": "product created successfully"
 }
 ```
 
-## 10. Delete Product
+# 15.Delete Product
 
-```bash
-https://apmc.api.vsensetech.in/delete/product/<PRODUCT_ID>
+```jsx
+http://localhost:8000/delete/product/<PRODUCT_ID
 ```
 
-### HTTP Method → DELETE
+### **HTTP Method → DELETE**
 
 HTTP Response Format
 
-```json
+```jsx
 {
     "message": "product deleted successfully"
 }
 ```
 
-## 11. Get All Invoices
+# 16.**Get Products**
 
-```bash
-https://apmc.api.vsensetech.in/get/invoices/<USER_ID>
+```jsx
+http://localhost:8000/get/products/<INVOICE_ID>
 ```
 
-### HTTP Method → GET
+### **HTTP Method → GET**
 
 HTTP Response Format
 
-```json
+```jsx
 {
-    "invoices": [
-        {
-            "invoice_id": "749ca101-91e6-4cf5-843c-29cdc072c8a5",
-            "name": "Srujan Bhai Invoice",
-            "payment_status": false
-        }
-    ]
+  "receiver_details": [
+    {
+      "product_id": "ade5286b-c441-4daf-b28a-ed23ebdb3a51",
+      "product_name": "Paddy",
+      "product_hsn": "90",
+      "product_qty": "3",
+      "product_unit": "3",
+      "product_rate": "120",
+      "invoice_id": "",
+      "total": "360"
+    }
+  ]
 }
 ```
 
-## 11. Download Invoice PDF
+# 17.**Update Payment Status To Done**
 
-```bash
-http://apmc.api.vsensetech.in/download/invoice/<INVOICE_ID>
+```jsx
+http://localhost:8000/update/invoice/payment/<INVOICE_ID>
 ```
 
-### HTTP Method → GET
+### **HTTP Method → PATCH**
 
-Response will be PDF file
-
-## 12. Delete Invoice
-
-```bash
-https://apmc.api.vsensetech.in/delete/invoice/<Invoice_ID>
-```
-
-### HTTP Method → DELETE
-
-HTTP Response Format
-
-```json
-{
-    "message": "invoice deleted successfully"
-}
-```
-
-## 13. Get Products
-
-```bash
-https://apmc.api.vsensetech.in/get/products/<INVOICE_ID>
-```
-
-### HTTP Method → GET
-
-HTTP Response Format
-
-```json
-{
-    "receiver_details": [
-        {
-            "product_id": "4f69262c-7228-41f1-8287-bec6d201907f",
-            "product_name": "Maize",
-            "product_hsn": "90",
-            "product_qty": "3",
-            "product_unit": "3",
-            "product_rate": "120",
-            "invoice_id": "",
-            "total": "360"
-        },
-        {
-            "product_id": "e1d182be-2829-4115-9eb8-c99e413c15c0",
-            "product_name": "Paddy",
-            "product_hsn": "9",
-            "product_qty": "3",
-            "product_unit": "99",
-            "product_rate": "2000",
-            "invoice_id": "",
-            "total": "6000"
-        }
-    ]
-}
-```
-
-## 14. Update Payment Status To Done
-
-```bash
-https://apmc.api.vsensetech.in/update/invoice/payment/<INVOICE_ID>
-```
-
-### HTTP Method → PATCH
-
-```json
+```jsx
 {
     "message": "payment status updated successfully"
 }
+```
+
+# 18.Create Biller
+
+```jsx
+http://localhost:8000/create/biller
+```
+
+### HTTP Method →POST
+
+Request Body format
+
+```jsx
+{
+  "biller_name": "Shubhang",
+  "biller_address": "Vidyanagara",
+  "biller_mobile": "9876543210",
+  "biller_gstin": "29ABCDE1234F2Z5",
+  "biller_pan": "ABCDE1234F",
+  "biller_mail": "srujan@gmail.com",
+  "user_id": "8e89af88-796b-4a46-a9da-4e130ff19fc5"
+}
+
+```
+
+HTTP Response Format
+
+```jsx
+{
+  "message": "Biller created successfully"
+}
+```
+
+# 19.Get Biller
+
+```jsx
+http://localhost:8000/get/billers/<USER_ID>
+```
+
+### HTTP  Method →GET
+
+HTTP Response Format
+
+```jsx
+[
+  {
+    "user_id": "8e89af88-796b-4a46-a9da-4e130ff19fc5",
+    "biller_id": "74972cdf-e7e4-42f2-83a2-f936cdde3dfa",
+    "biller_name": "Shubhang",
+    "biller_address": "Vidyanagara",
+    "biller_mobile": "9876543210",
+    "biller_gstin": "29ABCDE1234F2Z5",
+    "biller_pan": "ABCDE1234F",
+    "biller_mail": "srujan@gmail.com",
+    "biller_companylogo": "PENDING"
+  },
+  {
+    "user_id": "8e89af88-796b-4a46-a9da-4e130ff19fc5",
+    "biller_id": "2553442b-d5ca-4710-a6e3-ae9af8a5bdfb",
+    "biller_name": "Shubhang",
+    "biller_address": "Vidyanagara",
+    "biller_mobile": "9876543210",
+    "biller_gstin": "29ABCDE1234F2Z5",
+    "biller_pan": "ABCDE1234F",
+    "biller_mail": "srujan@gmail.com",
+    "biller_companylogo": "PENDING"
+  }
+]
+```
+
+# 20.Delete Biller
+
+```jsx
+http://localhost:8000/delete/biller/<BILLER_ID>
+```
+
+### **HTTP Method → DELETE**
+
+HTTP Response Format
+
+```jsx
+{
+  "message": "Biller deleted successfully"
+}
+```
+
+# 21.Create Banker
+
+```jsx
+http://localhost:8000/create/banker
+```
+
+### HTTP Method →POST
+
+Request Body format
+
+```jsx
+{
+  "bank_name": "HDFC Bank",
+  "bank_branch": "MG Road",
+  "bank_account_number": "9876543210",
+  "bank_ifsc_code": "HDFC0001234",
+  "bank_holder_name": "srujan",
+  "user_id": "8e89af88-796b-4a46-a9da-4e130ff19fc5"
+}
+
+```
+
+HTTP Response Format
+
+```jsx
+{
+  "message": "Banker created successfully"
+}
+```
+
+# 22.Get Banker
+
+```jsx
+http://localhost:8000/get/bankers/<USER_ID>
+```
+
+### HTTP Method →GET
+
+HTTP Response Format
+
+```jsx
+{
+  "bankers": [
+    {
+      "user_id": "8e89af88-796b-4a46-a9da-4e130ff19fc5",
+      "bank_id": "7d71facd-3f1a-4763-ad8e-499e51965f56",
+      "bank_name": "HDFC Bank",
+      "bank_branch": "MG Road",
+      "bank_account_number": "9876543210",
+      "bank_ifsc_code": "HDFC0001234",
+      "bank_holder_name": "srujan"
+    }
+  ]
+}
+```
+
+# 23.Delete Banker
+
+```jsx
+http://localhost:8000/delete/banker/<BANKER_ID>
+```
+
+### HTTP Method →Delete
+
+HTTP Response Format
+
+```jsx
+{
+  "message": "Banker deleted successfully"
+}
+```
+
+# 24.Upload Company Logo
+
+```jsx
+http://localhost:8000/upload/company/logo/<USER_ID>
+```
+
+### HTTP Method →POST
+
+# 25.Delete company logo
+
+```jsx
+http://localhost:8000/delete/company/logo/<fileName>
+```
+
+### HTTP Method →DELETE
+
+# 26.Forgot Password
+
+```jsx
+http://localhost:8000/forgotpassword
+```
+
+### HTTP Method →POST
+
+Request Body format
+
+```jsx
+{
+  "user_email":"vithsutra.tech@gmail.com"
+}
+
+```
+
+HTTP Response Format
+
+```jsx
+{
+  "message": "OTP sent successfully"
+}
+```
+
+# 27.Validate OTP
+
+```jsx
+http://localhost:8000/validateotp
+```
+
+### HTTP Method →POST
+
+Request Body format
+
+```jsx
+{
+  "user_email":"vithsutra.tech@gmail.com",
+  "otp":"080060"
+}
+```
+
+HTTP Response Format
+
+```jsx
+{
+		"token_id":"b4fa2e19-a1d4-497c-a3cf-f412db957ab9"
+}
+```
+
+# 28.Reset Password
+
+```jsx
+http://localhost:8000/resetpassword
+```
+
+### HTTP Method →POST
+
+Request Body format
+
+```jsx
+{
+	"token_id":"b4fa2e19-a1d4-497c-a3cf-f412db957ab9",
+	"new_password":"Sruj@2003",
+	"confirm_password":"Sruj@2003"
+}
+```
+
+HTTP Response Format
+
+```jsx
+ {
+		 "Password reset successful"
+ }
 ```
