@@ -34,7 +34,9 @@ func UserRouters(r *Router) {
 	r.mux.HandleFunc("/create/user", userHandler.RegisterHandler).Methods("POST")
 	r.mux.HandleFunc("/delete/{user_id}", userHandler.DeleteUserHandler).Methods("DELETE")
 	r.mux.HandleFunc("/login", userHandler.LoginHandler).Methods("POST")
-
+	r.mux.HandleFunc("/forgotpassword", userHandler.ForgotPasswordHandler).Methods("POST")
+	r.mux.HandleFunc("/validateotp", userHandler.ValidateOTPHandler).Methods("POST")
+	r.mux.HandleFunc("/resetpassword", userHandler.ResetPasswordHandler).Methods("POST")
 }
 
 func ConsigneeRouters(r *Router) {
