@@ -63,7 +63,7 @@ jobs:
             docker images | grep "<none>" | awk '{print $3}' | xargs -r docker rmi -f
             docker ps | grep apmc-billing-app-backend | awk '{print $1}' | xargs -I {} docker kill {}
             docker ps -a | grep apmc-billing-app-backend | awk '{print $1}' | xargs -I  {} docker rm {}
-            docker run -d -p 8081:8080 --name apmc-billing-app-backend --env-file ~/billing-app/billing-app-deployment/.env -v "${echo $HOME}/billing-app/uploads/logos:/app/uploads/logos" $IMAGE_NAME
+            docker run -d -p 8081:8080 --name apmc-billing-app-backend --env-file ~/billing-app/billing-app-deployment/.env -v "$HOME/billing-app/uploads/logos:/app/uploads/logos" $IMAGE_NAME
 
 
 
