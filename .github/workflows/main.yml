@@ -38,9 +38,9 @@ jobs:
       - name: setup deployment in Cloud Instance
         uses: appleboy/ssh-action@v0.1.10
         with: 
-          host: "${{secrets.GCP_INSTANCE_HOST}}"
-          username: "${{secrets.GCP_INSTANCE_USERNAME}}"
-          key: "${{secrets.GCP_SSH_KEY}}"
+          host: "${{secrets.CLOUD_INSTANCE_HOST}}"
+          username: "${{secrets.CLOUD_INSTANCE_USERNAME}}"
+          key: "${{secrets.CLOUD_INSTANCE_SSH_PRIVATE_KEY}}"
           script: |
             echo "connected to vm"
             mkdir -p ~/billing-app/billing-app-deployment
