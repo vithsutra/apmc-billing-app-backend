@@ -70,8 +70,8 @@ func InvoiceRouters(r *Router) {
 }
 
 func BillerRouters(r *mux.Router, db *sql.DB) {
-	s3Repo := &storage.AwsS3Repo{}
-	billerHandler := handlers.NewBillerHandler(repository.NewBillerRepo(db, s3Repo))
+	localFileStorageRepo := storage.NewLocalFileStorageRepo("./uploads/logos")
+	billerHandler := handlers.NewBillerHandler(repository.NewBillerRepo(db, localFileStorageRepo))
 
 	r.HandleFunc("/create/biller", billerHandler.CreateBillerHandler).Methods("POST")
 	r.HandleFunc("/delete/biller/{biller_id}", billerHandler.DeleteBillerHandler).Methods("DELETE")

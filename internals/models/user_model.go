@@ -38,11 +38,14 @@ type Token struct {
 	TokenId string
 }
 
-type UserInterface interface {
+type UserDatabaseInterface interface {
 	Login(r *http.Request) (string, error)
 	Register(r *http.Request) (string, error)
 	DeleteUser(r *http.Request) error
 	ForgotPassword(r *http.Request) error
 	ResetPassword(r *http.Request) error
 	ValidateOTP(r *http.Request) (string, error)
+}
+
+type UserStorageInterface interface {
 }

@@ -8,10 +8,10 @@ import (
 )
 
 type UserHandler struct {
-	UserRepo models.UserInterface
+	UserRepo models.UserDatabaseInterface
 }
 
-func NewUserHandler(UserRepo models.UserInterface) *UserHandler {
+func NewUserHandler(UserRepo models.UserDatabaseInterface) *UserHandler {
 	return &UserHandler{
 		UserRepo,
 	}

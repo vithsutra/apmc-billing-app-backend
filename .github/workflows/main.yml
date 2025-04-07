@@ -24,7 +24,7 @@ jobs:
           docker push $IMAGE_NAME
 
   deploy:
-    name: deploy docker-image to GCE
+    name: deploy docker-image to Cloud Instance
     runs-on: ubuntu-latest
     needs: build
 
@@ -35,7 +35,7 @@ jobs:
           echo "ADDRESS=${{secrets.ADDRESS}}" >> .env
           echo "SERVER_MODE=${{secrets.SERVER_MODE}}" >> .env
 
-      - name: setup deployment in GCE
+      - name: setup deployment in Cloud Instance
         uses: appleboy/ssh-action@v0.1.10
         with: 
           host: "${{secrets.GCP_INSTANCE_HOST}}"
@@ -44,25 +44,26 @@ jobs:
           script: |
             echo "connected to vm"
             mkdir -p ~/billing-app/billing-app-deployment
+            mkdir -p ~/billing-app/uploads/logos
       - name: upload .env to vm
         run: |
-          echo "${{secrets.GCP_SSH_KEY}}" > biometric_ssh_key
-          chmod 600 biometric_ssh_key
-          scp -o StrictHostKeyChecking=no -i biometric_ssh_key .env ${{ secrets.GCP_INSTANCE_USERNAME }}@${{ secrets.GCP_INSTANCE_HOST }}:~/billing-app/billing-app-deployment/.env
-          rm biometric_ssh_key
+          echo "${{secrets.CLOUD_INSTANCE_SSH_PRIVATE_KEY}}" > ssh_key
+          chmod 600 ssh_key
+          scp -o StrictHostKeyChecking=no -i ssh_key .env ${{ secrets.CLOUD_INSTANCE_USERNAME }}@${{ secrets.CLOUD_INSTANCE_HOST }}:~/billing-app/billing-app-deployment/.env
 
-      - name: deploy docker image into GCE
+      - name: deploy docker image into Cloud Instance
         uses: appleboy/ssh-action@v0.1.10
         with:
-           host: "${{ secrets.GCP_INSTANCE_HOST }}"
-           username: "${{ secrets.GCP_INSTANCE_USERNAME }}"
-           key: "${{ secrets.GCP_SSH_KEY }}"
+           host: "${{ secrets.CLOUD_INSTANCE_HOST }}"
+           username: "${{ secrets.CLOUD_INSTANCE_USERNAME }}"
+           key: "${{ secrets.CLOUD_INSTANCE_SSH_PRIVATE_KEY }}"
            script: |
             IMAGE_NAME=docker.io/vithsutratechnologies/apmc-billing-app-backend:latest
             docker pull $IMAGE_NAME
+            docker images | grep "<none>" | awk '{print $3}' | xargs -r docker rmi -f
             docker ps | grep apmc-billing-app-backend | awk '{print $1}' | xargs -I {} docker kill {}
             docker ps -a | grep apmc-billing-app-backend | awk '{print $1}' | xargs -I  {} docker rm {}
-            docker run -d -p 8081:8080 --name apmc-billing-app-backend --env-file ~/billing-app/billing-app-deployment/.env $IMAGE_NAME
+            docker run -d -p 8081:8080 --name apmc-billing-app-backend --env-file ~/billing-app/billing-app-deployment/.env -v "~/billing-app/uploads/logos:/app/uploads/logos" $IMAGE_NAME
 
 
 

@@ -20,10 +20,10 @@ import (
 
 type BillerRepo struct {
 	db       *sql.DB
-	s3Client *storage.AwsS3Repo
+	s3Client *storage.LocalFileStorage
 }
 
-func NewBillerRepo(db *sql.DB, s3Client *storage.AwsS3Repo) *BillerRepo {
+func NewBillerRepo(db *sql.DB, s3Client *storage.LocalFileStorage) *BillerRepo {
 	return &BillerRepo{
 		db:       db,
 		s3Client: s3Client,
