@@ -36,7 +36,8 @@ func SendResetTokenMail(toEmail, otp string) error {
 	mailer.SetHeader("Subject", "Your OTP for Password Reset")
 	mailer.SetBody("text/html", body.String())
 
-	dialer := gomail.NewDialer("smtp.gmail.com", 587, "noreply.vithsutra@gmail.com", "vlcoctlouuzmwqqv")
+	dialer := gomail.NewDialer("smtp.gmail.com", 465, "noreply.vithsutra@gmail.com", "vlcoctlouuzmwqqv")
+	dialer.SSL = true
 
 	if err := dialer.DialAndSend(mailer); err != nil {
 		log.Println("Failed to send OTP email:", err)
