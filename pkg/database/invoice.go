@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 
@@ -9,22 +10,24 @@ import (
 
 func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 	query := `INSERT INTO invoice (
-				invoice_id,
-				invoice_name,
-				invoice_payment_status,
-				invoice_reverse_charge,
-				invoice_date,
-				invoice_state,
-				invoice_state_code,
-				invoice_challan_number,
-				invoice_vehicle_number,
-				invoice_date_of_supply,
-				invoice_place_of_supply,
-				invoice_gst,
-				user_id,
-				billed_id,
-				shipped_id
-				) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`
+		invoice_id,
+		invoice_name,
+		invoice_payment_status,
+		invoice_reverse_charge,
+		invoice_date,
+		invoice_state,
+		invoice_state_code,
+		invoice_challan_number,
+		invoice_vehicle_number,
+		invoice_date_of_supply,
+		invoice_place_of_supply,
+		invoice_gst,
+		user_id,
+		billed_id,
+		shipped_id,
+		biller_id
+	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`
+
 	_, err := q.db.Exec(
 		query,
 		invoice.InvoiceId,
@@ -42,9 +45,14 @@ func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 		invoice.UserId,
 		invoice.BilledId,
 		invoice.ShippedId,
+		invoice.BillerId,
 	)
 
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to create invoice: %w", err)
+	}
+
+	return nil
 }
 
 func (q *Query) DeleteInvoice(invoiceId string) error {
@@ -170,6 +178,7 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 			JOIN users u ON i.user_id=u.user_id
 		 	JOIN billed r ON i.billed_id=r.billed_id
 			JOIN shipped c ON i.shipped_id=c.shipped_id
+			JOIN biller b ON i.biller_id=b.billed_id
 
 			WHERE i.invoice_id=$1
 			`

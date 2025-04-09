@@ -19,7 +19,7 @@ func NewBillerHandler(BillerRepo models.BillerInterface) *BillerHandler {
 }
 
 func (bh *BillerHandler) CreateBillerHandler(w http.ResponseWriter, r *http.Request) {
-	err := bh.BillerRepo.CreateBiller(r)
+	err := bh.BillerRepo.CreateBillerWithLogo(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

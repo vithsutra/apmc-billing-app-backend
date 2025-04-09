@@ -20,6 +20,7 @@ type InvoiceRequest struct {
 	UserId               string `json:"user_id" validate:"required,max=100"`
 	ReceiverId           string `json:"receiver_id" validate:"required,max=100"`
 	ConsigneeId          string `json:"consignee_id" validate:"required,max=100"`
+	BillerId             string `json:"biller_id" validate:"required,max=100"`
 }
 
 type InvoiceResponse struct {
@@ -45,6 +46,7 @@ type Invoice struct {
 	UserId                 string
 	BilledId               string
 	ShippedId              string
+	BillerId               string
 }
 
 func NewInvoice(request *InvoiceRequest) *Invoice {
@@ -68,6 +70,7 @@ func NewInvoice(request *InvoiceRequest) *Invoice {
 		UserId:                 request.UserId,
 		BilledId:               request.ReceiverId,
 		ShippedId:              request.ConsigneeId,
+		BillerId:               request.BillerId,
 	}
 }
 

@@ -67,9 +67,11 @@ func (q *Query) InitilizeDatabase() error {
 			user_id VARCHAR(100) NOT NULL,
 			billed_id VARCHAR(100) NOT NULL,
 			shipped_id VARCHAR(100) NOT NULL,
+			biller_id VARCHAR(100) NOT NULL,
 			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
 			FOREIGN KEY (billed_id) REFERENCES billed(billed_id) ON DELETE CASCADE,
-			FOREIGN KEY (shipped_id) REFERENCES shipped(shipped_id) ON DELETE CASCADE
+			FOREIGN KEY (shipped_id) REFERENCES shipped(shipped_id) ON DELETE CASCADE,
+			FOREIGN KEY (biller_id) REFERENCES biller(biller_id) ON DELETE CASCADE
 		)`,
 		`CREATE TABLE IF NOT EXISTS product(
 			product_id VARCHAR(100) PRIMARY KEY,
