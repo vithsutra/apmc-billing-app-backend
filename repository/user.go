@@ -18,8 +18,9 @@ import (
 )
 
 type UserRepo struct {
-	db       *sql.DB
-	otpCache map[string]otpData
+	db               *sql.DB
+	emailServiceRepo models.EmailServiceInterface
+	otpCache         map[string]otpData
 }
 
 type otpData struct {
@@ -27,17 +28,17 @@ type otpData struct {
 	ExpiresAt time.Time
 }
 
-func NewUserRepo(db *sql.DB) *UserRepo {
+func NewUserRepo(db *sql.DB, emailServiceRepo models.EmailServiceInterface) *UserRepo {
 	return &UserRepo{
-		db:       db,
-		otpCache: make(map[string]otpData),
+		db:               db,
+		emailServiceRepo: emailServiceRepo,
+		otpCache:         make(map[string]otpData),
 	}
 }
 
 func (ur *UserRepo) Login(r *http.Request) (string, error) {
 	var userLoginRequest models.UserLoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&userLoginRequest); err != nil {
-		log.Println(err)
 		return "", err
 	}
 
@@ -53,14 +54,14 @@ func (ur *UserRepo) Login(r *http.Request) (string, error) {
 func (ur *UserRepo) Register(r *http.Request) (string, error) {
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		log.Println(err)
 		return "", err
 	}
+
 	validate := validator.New()
 	if err := validate.Struct(user); err != nil {
-		log.Println(err)
 		return "", err
 	}
+
 	query := database.NewQuery(ur.db)
 	return query.Register(user)
 }
@@ -71,35 +72,76 @@ func (ur *UserRepo) DeleteUser(r *http.Request) error {
 	if userId == "" {
 		return errors.New("user id is required")
 	}
+
 	query := database.NewQuery(ur.db)
 	return query.DeleteUser(userId)
 }
 
-func (ur *UserRepo) ForgotPassword(r *http.Request) error {
-	var forgotReq models.ForgotPasswordRequest
-	if err := json.NewDecoder(r.Body).Decode(&forgotReq); err != nil {
-		log.Println(err)
-		return err
+func (ur *UserRepo) UserForgotPassword(r *http.Request) (int32, error) {
+	var forgotPasswordRequest models.ForgotPasswordRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&forgotPasswordRequest); err != nil {
+		return 400, errors.New("invalid JSON request body")
 	}
 
 	validate := validator.New()
-	if err := validate.Struct(forgotReq); err != nil {
-		return err
+	if err := validate.Struct(forgotPasswordRequest); err != nil {
+		return 400, errors.New("invalid request format")
 	}
 
-	otp := utils.GenerateOTP(6)
-	ur.otpCache[forgotReq.UserEmail] = otpData{
-		OTP:       otp,
-		ExpiresAt: time.Now().Add(1 * time.Minute),
+	query := database.NewQuery(ur.db)
+	emailExists, err := query.CheckUserEmailsExists(forgotPasswordRequest.UserEmail)
+	if err != nil {
+		log.Println(err)
+		return 500, errors.New("internal server error")
+
+	}
+	if !emailExists {
+		return 400, errors.New("email does not exist")
 	}
 
-	return utils.SendResetTokenMail(forgotReq.UserEmail, otp)
+	otp, err := utils.GenerateOTP()
+	log.Println(otp)
+	if err != nil {
+		return 500, errors.New("failed to generate OTP")
+	}
+
+	expireTime := time.Now().Add(5 * time.Minute)
+
+	if err := query.StoreUserOtp(forgotPasswordRequest.UserEmail, otp, expireTime); err != nil {
+		return 500, errors.New("failed to store OTP")
+	}
+
+	emailBody := &models.UserOtpEmailFormat{
+		To:        forgotPasswordRequest.UserEmail,
+		Subject:   "Verification Code to Reset Password",
+		EmailType: "otp",
+		Data: map[string]string{
+			"otp":         otp,
+			"expire_time": "5",
+		},
+	}
+
+	jsonBytes, err := json.Marshal(emailBody)
+	if err != nil {
+		return 500, errors.New("error generating email body")
+	}
+
+	if err := ur.emailServiceRepo.SendEmail(jsonBytes); err != nil {
+		return 500, errors.New("failed to send email")
+	}
+
+	go func() {
+		time.Sleep(5 * time.Minute)
+		_ = query.DeleteUserOtp((forgotPasswordRequest.UserEmail), otp)
+	}()
+
+	return 200, nil
 }
 
 func (ur *UserRepo) ValidateOTP(r *http.Request) (string, error) {
 	var otpReq models.OTPValidationRequest
 	if err := json.NewDecoder(r.Body).Decode(&otpReq); err != nil {
-		log.Println(err)
 		return "", err
 	}
 
@@ -129,7 +171,6 @@ func (ur *UserRepo) ValidateOTP(r *http.Request) (string, error) {
 func (ur *UserRepo) ResetPassword(r *http.Request) error {
 	var resetReq models.ResetPasswordRequest
 	if err := json.NewDecoder(r.Body).Decode(&resetReq); err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -144,8 +185,7 @@ func (ur *UserRepo) ResetPassword(r *http.Request) error {
 	}
 
 	query := database.NewQuery(ur.db)
-	err := query.UpdateUserPassword(emailData.OTP, resetReq.NewPassword)
-	if err != nil {
+	if err := query.UpdateUserPassword(emailData.OTP, resetReq.NewPassword); err != nil {
 		return err
 	}
 

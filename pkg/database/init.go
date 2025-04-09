@@ -92,20 +92,15 @@ func (q *Query) InitilizeDatabase() error {
 			user_id VARCHAR(100) NOT NULL,
 			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 		)`,
-		`CREATE TABLE IF NOT EXISTS password_resets (
-			token_id UUID PRIMARY KEY,
-			user_id TEXT NOT NULL,
-			token TEXT NOT NULL,
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-		);
-`,
-		`
-		CREATE TABLE IF NOT EXISTS password_reset_tokens (
-			token VARCHAR(6) PRIMARY KEY,
-			user_email VARCHAR(100) NOT NULL,
-			expires_at TIMESTAMP NOT NULL
-		);
-		`,
+		`CREATE TABLE IF NOT EXISTS user_otps (
+			email VARCHAR(255) NOT NULL,
+			otp VARCHAR(255) NOT NULL,
+			expire_time TIMESTAMPTZ NOT NULL,
+			created_at TIMESTAMPTZ DEFAULT NOW(),
+			FOREIGN KEY (email) REFERENCES users(user_email) ON DELETE CASCADE
+
+		)
+			`,
 	}
 	tx, err := q.db.Begin()
 	if err != nil {

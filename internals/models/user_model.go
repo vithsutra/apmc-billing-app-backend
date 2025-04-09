@@ -17,6 +17,12 @@ type User struct {
 type ForgotPasswordRequest struct {
 	UserEmail string `json:"user_email" validate:"required,email,max=50"`
 }
+type UserOtpEmailFormat struct {
+	To        string            `json:"to"`
+	Subject   string            `json:"subject"`
+	EmailType string            `json:"email_type"`
+	Data      map[string]string `json:"data"`
+}
 
 type OTPValidationRequest struct {
 	UserEmail string `json:"user_email" validate:"required,email,max=50"`
@@ -33,19 +39,26 @@ type ResetPasswordRequest struct {
 	ConfirmPassword string `json:"confirm_password" validate:"required,eqfield=NewPassword"`
 }
 
-type Token struct {
-	Token   string
-	TokenId string
-}
-
 type UserDatabaseInterface interface {
 	Login(r *http.Request) (string, error)
 	Register(r *http.Request) (string, error)
 	DeleteUser(r *http.Request) error
-	ForgotPassword(r *http.Request) error
 	ResetPassword(r *http.Request) error
 	ValidateOTP(r *http.Request) (string, error)
+	UserForgotPassword(r *http.Request) (int32, error)
 }
 
-type UserStorageInterface interface {
+type SuccessResponse struct {
+	Status  string      `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+}
+
+type ErrorResponse struct {
+	Status string `json:"status"`
+	Error  string `json:"error"`
+}
+
+type EmailServiceInterface interface {
+	SendEmail(data []byte) error
 }

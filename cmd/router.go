@@ -5,6 +5,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/vsynclabs/billsoft/internals/handlers"
+	"github.com/vsynclabs/billsoft/pkg/rabbitmq"
 	"github.com/vsynclabs/billsoft/pkg/storage"
 	"github.com/vsynclabs/billsoft/repository"
 )
@@ -14,23 +15,29 @@ type Router struct {
 	db  *sql.DB
 }
 
-func NewRouter(conn *Connection) *Router {
+func NewRouter(conn *Connection, rabbitMq *rabbitmqConnection) *Router {
 	mux := mux.NewRouter()
 	router := &Router{
 		mux: mux,
 		db:  conn.db,
 	}
-	UserRouters(router)
+	emailServiceRepo := rabbitmq.NewRabbitmqRepo(rabbitMq.conn, rabbitMq.chann)
+	userRepo := repository.NewUserRepo(router.db, emailServiceRepo)
+
+	UserRouters(router, userRepo)
 	ConsigneeRouters(router)
 	ReceiverRouters(router)
 	ProductRouters(router)
 	InvoiceRouters(router)
 	BillerRouters(router.mux, router.db)
 	BankerRouter(router)
+
 	return router
 }
-func UserRouters(r *Router) {
-	userHandler := handlers.NewUserHandler(repository.NewUserRepo(r.db))
+
+func UserRouters(r *Router, userRepo *repository.UserRepo) {
+	userHandler := handlers.NewUserHandler(userRepo)
+
 	r.mux.HandleFunc("/create/user", userHandler.RegisterHandler).Methods("POST")
 	r.mux.HandleFunc("/delete/{user_id}", userHandler.DeleteUserHandler).Methods("DELETE")
 	r.mux.HandleFunc("/login", userHandler.LoginHandler).Methods("POST")
