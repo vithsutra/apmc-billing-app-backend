@@ -30,22 +30,19 @@ func NewBillerRepo(db *sql.DB, s3Client *storage.LocalFileStorage) *BillerRepo {
 	}
 }
 func (b *BillerRepo) CreateBillerWithLogo(r *http.Request) error {
-	// Parse multipart form data (files and fields)
+
 	err := r.ParseMultipartForm(10 << 20) // 10 MB
 	if err != nil {
 		log.Println("Error parsing multipart form:", err)
 		return fmt.Errorf("form parsing error: %w", err)
 	}
 
-	// Dump all form values for debugging
 	for key, values := range r.MultipartForm.Value {
 		log.Printf("Received form key: %s => Value: %v", key, values)
 	}
 
-	// Log specifically for 'biller_mobile'
 	log.Println("Raw biller_mobile:", r.FormValue("biller_mobile"))
 
-	// Trim all inputs to avoid issues with leading/trailing spaces
 	biller := models.Biller{
 		BillerName:    strings.TrimSpace(r.FormValue("biller_name")),
 		BillerAddress: strings.TrimSpace(r.FormValue("biller_address")),
@@ -56,17 +53,14 @@ func (b *BillerRepo) CreateBillerWithLogo(r *http.Request) error {
 		UserId:        strings.TrimSpace(r.FormValue("user_id")),
 	}
 
-	// Log received biller object
 	log.Printf("Received biller: %+v\n", biller)
 
-	// Validate struct
 	validate := validator.New()
 	if err := validate.Struct(biller); err != nil {
 		log.Println("Validation failed:", err)
 		return fmt.Errorf("validation error: %w", err)
 	}
 
-	// Handle file (logo) upload
 	file, header, err := r.FormFile("logo")
 	if err != nil {
 		log.Println("Logo not uploaded or error:", err)
@@ -74,30 +68,26 @@ func (b *BillerRepo) CreateBillerWithLogo(r *http.Request) error {
 	}
 	defer file.Close()
 
-	// Copy the file to buffer
 	buf := new(bytes.Buffer)
 	if _, err := io.Copy(buf, file); err != nil {
 		return fmt.Errorf("file copy error: %w", err)
 	}
 
-	// Generate ID and save file
 	biller.BillerId = uuid.NewString()
 	fileName := fmt.Sprintf("%s-%s", biller.BillerId, header.Filename)
 
-	// Upload logo to S3 (or your storage service)
 	if err := b.s3Client.UploadCompanyLogo(fileName, buf); err != nil {
 		return fmt.Errorf("error uploading logo: %w", err)
 	}
 	biller.BillerCompanyLogo = fileName
 
-	// Store biller data in DB
 	query := database.NewQuery(b.db)
 	if err := query.CreateBiller(&biller); err != nil {
 		log.Println("DB insert error:", err)
 		return fmt.Errorf("failed to create biller: %w", err)
 	}
 
-	log.Println("✅ Biller with logo created successfully:", biller.BillerId)
+	log.Println(" Biller with logo created successfully:", biller.BillerId)
 	return nil
 }
 
