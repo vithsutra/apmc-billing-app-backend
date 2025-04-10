@@ -34,6 +34,7 @@ jobs:
           echo "DATABASE_URL=${{secrets.DATABASE_URL}}" >> .env
           echo "ADDRESS=${{secrets.ADDRESS}}" >> .env
           echo "SERVER_MODE=${{secrets.SERVER_MODE}}" >> .env
+          echo "RABBITMQ_URL=${{secrets.RABBITMQ_URL}}" >> .env
 
       - name: setup deployment in Cloud Instance
         uses: appleboy/ssh-action@v0.1.10
