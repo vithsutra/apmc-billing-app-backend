@@ -116,14 +116,13 @@ func (ur *UserRepo) UserForgotPassword(r *http.Request) (int32, error) {
 		return 500, errors.New("internal server error")
 	}
 
-	emailBody := &models.UserOtpEmailFormat{
-		To:        forgotPasswordRequest.UserEmail,
-		Subject:   "Verification Code to Reset Password",
-		EmailType: "otp",
-		Data: map[string]string{
-			"otp":         otp,
-			"expire_time": "5",
-		},
+	emailBody := new(models.UserOtpEmailFormat)
+	emailBody.To = forgotPasswordRequest.UserEmail
+	emailBody.Subject = "Verification Code to Reset Password"
+	emailBody.EmailType = "otp"
+	emailBody.Data = map[string]string{
+		"otp":         otp,
+		"expire_time": "5",
 	}
 
 	jsonBytes, err := json.Marshal(emailBody)
