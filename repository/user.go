@@ -81,35 +81,39 @@ func (ur *UserRepo) UserForgotPassword(r *http.Request) (int32, error) {
 	var forgotPasswordRequest models.ForgotPasswordRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&forgotPasswordRequest); err != nil {
+		log.Println("Failed to decode JSON body:", err)
 		return 400, errors.New("invalid JSON request body")
 	}
 
 	validate := validator.New()
 	if err := validate.Struct(forgotPasswordRequest); err != nil {
+		log.Println("Validation failed for request:", err)
 		return 400, errors.New("invalid request format")
 	}
 
 	query := database.NewQuery(ur.db)
+
 	emailExists, err := query.CheckUserEmailsExists(forgotPasswordRequest.UserEmail)
 	if err != nil {
-		log.Println(err)
+		log.Println("Database error while checking email existence:", err)
 		return 500, errors.New("internal server error")
-
 	}
+
 	if !emailExists {
-		return 400, errors.New("email does not exist")
+		log.Println("Email not found:", forgotPasswordRequest.UserEmail)
+		return 400, errors.New("user email does not exist")
 	}
 
 	otp, err := utils.GenerateOTP()
-	log.Println(otp)
 	if err != nil {
-		return 500, errors.New("failed to generate OTP")
+		log.Println("Failed to generate OTP:", err)
+		return 500, errors.New("internal server error")
 	}
 
 	expireTime := time.Now().Add(5 * time.Minute)
-
 	if err := query.StoreUserOtp(forgotPasswordRequest.UserEmail, otp, expireTime); err != nil {
-		return 500, errors.New("failed to store OTP")
+		log.Println("Failed to store OTP in database:", err)
+		return 500, errors.New("internal server error")
 	}
 
 	emailBody := &models.UserOtpEmailFormat{
@@ -124,16 +128,21 @@ func (ur *UserRepo) UserForgotPassword(r *http.Request) (int32, error) {
 
 	jsonBytes, err := json.Marshal(emailBody)
 	if err != nil {
-		return 500, errors.New("error generating email body")
+		log.Println("Error marshaling email body:", err)
+		return 500, errors.New("internal server error")
 	}
 
 	if err := ur.emailServiceRepo.SendEmail(jsonBytes); err != nil {
-		return 500, errors.New("failed to send email")
+		log.Println("Failed to send OTP email:", err)
+		return 500, errors.New("failed to send verification email")
 	}
 
+	// Auto-clear OTP after 5 minutes
 	go func() {
 		time.Sleep(5 * time.Minute)
-		_ = query.DeleteUserOtp((forgotPasswordRequest.UserEmail), otp)
+		if err := query.DeleteUserOtp(forgotPasswordRequest.UserEmail, otp); err != nil {
+			log.Println("Error while deleting expired OTP:", err)
+		}
 	}()
 
 	return 200, nil
