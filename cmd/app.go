@@ -28,22 +28,29 @@ func init() {
 }
 
 func Start() {
-
-	// Database Connection
+	// Load DB connection
 	conn := NewDatabaseConnection()
 	conn.CheckStatus()
 	defer conn.Close()
-	// Initilize Database
+
+	// Init DB
 	query := database.NewQuery(conn.db)
 	if err := query.InitilizeDatabase(); err != nil {
 		log.Fatalf("Unable to initilize database: %v", err)
 	}
+
+	// Load RabbitMQ
+	rabbitmqConn := NewRabbitmqConnection()
+	defer rabbitmqConn.conn.Close()
+	defer rabbitmqConn.chann.Close()
+
 	// New Server
 	server := &http.Server{
 		Addr:    os.Getenv("ADDRESS"),
-		Handler: NewRouter(conn).mux,
+		Handler: NewRouter(conn, rabbitmqConn).mux, // pass it here!
 	}
 	log.Printf("Server is running on address %v", os.Getenv("ADDRESS"))
+
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Fatalf("Unable to start the server: %v", err)

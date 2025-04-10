@@ -3,12 +3,12 @@ package repository
 import (
 	"bytes"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
@@ -29,26 +29,65 @@ func NewBillerRepo(db *sql.DB, s3Client *storage.LocalFileStorage) *BillerRepo {
 		s3Client: s3Client,
 	}
 }
+func (b *BillerRepo) CreateBillerWithLogo(r *http.Request) error {
 
-func (b *BillerRepo) CreateBiller(r *http.Request) error {
-	var biller models.Biller
-
-	if err := json.NewDecoder(r.Body).Decode(&biller); err != nil {
-		return fmt.Errorf("invalid request payload: %w", err)
+	err := r.ParseMultipartForm(10 << 20) // 10 MB
+	if err != nil {
+		log.Println("Error parsing multipart form:", err)
+		return fmt.Errorf("form parsing error: %w", err)
 	}
+
+	for key, values := range r.MultipartForm.Value {
+		log.Printf("Received form key: %s => Value: %v", key, values)
+	}
+
+	log.Println("Raw biller_mobile:", r.FormValue("biller_mobile"))
+
+	biller := models.Biller{
+		BillerName:    strings.TrimSpace(r.FormValue("biller_name")),
+		BillerAddress: strings.TrimSpace(r.FormValue("biller_address")),
+		BillerMobile:  strings.TrimSpace(r.FormValue("biller_mobile")),
+		BillerGstin:   strings.TrimSpace(r.FormValue("biller_gstin")),
+		BillerPan:     strings.TrimSpace(r.FormValue("biller_pan")),
+		BillerMail:    strings.TrimSpace(r.FormValue("biller_mail")),
+		UserId:        strings.TrimSpace(r.FormValue("user_id")),
+	}
+
+	log.Printf("Received biller: %+v\n", biller)
 
 	validate := validator.New()
 	if err := validate.Struct(biller); err != nil {
+		log.Println("Validation failed:", err)
 		return fmt.Errorf("validation error: %w", err)
 	}
 
+	file, header, err := r.FormFile("logo")
+	if err != nil {
+		log.Println("Logo not uploaded or error:", err)
+		return fmt.Errorf("logo upload error: %w", err)
+	}
+	defer file.Close()
+
+	buf := new(bytes.Buffer)
+	if _, err := io.Copy(buf, file); err != nil {
+		return fmt.Errorf("file copy error: %w", err)
+	}
+
 	biller.BillerId = uuid.NewString()
+	fileName := fmt.Sprintf("%s-%s", biller.BillerId, header.Filename)
+
+	if err := b.s3Client.UploadCompanyLogo(fileName, buf); err != nil {
+		return fmt.Errorf("error uploading logo: %w", err)
+	}
+	biller.BillerCompanyLogo = fileName
 
 	query := database.NewQuery(b.db)
 	if err := query.CreateBiller(&biller); err != nil {
-		log.Println("Database error:", err)
+		log.Println("DB insert error:", err)
 		return fmt.Errorf("failed to create biller: %w", err)
 	}
+
+	log.Println(" Biller with logo created successfully:", biller.BillerId)
 	return nil
 }
 

@@ -1,12 +1,19 @@
 package utils
 
-import "math/rand"
+import (
+	"crypto/rand"
+	"fmt"
+	"math/big"
+)
 
-func GenerateOTP(length int) string {
-	digits := "0123456789"
-	otp := make([]byte, length)
-	for i := range otp {
-		otp[i] = digits[rand.Intn(len(digits))]
+func GenerateOTP() (string, error) {
+	otp := ""
+	for i := 0; i < 6; i++ {
+		n, err := rand.Int(rand.Reader, big.NewInt(10))
+		if err != nil {
+			return "", err
+		}
+		otp += fmt.Sprintf("%d", n.Int64())
 	}
-	return string(otp)
+	return otp, nil
 }
