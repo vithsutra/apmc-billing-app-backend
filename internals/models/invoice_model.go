@@ -8,6 +8,7 @@ import (
 )
 
 type InvoiceRequest struct {
+	InvoiceNo            string `json:"invoice_no" validate:"required,max=50"`
 	InvoiceName          string `json:"invoice_name" validate:"required,max=100"`
 	InvoiceReverseCharge string `json:"invoice_reverse_charge" validate:"required,max=20"`
 	InvoiceState         string `json:"invoice_state" validate:"required,max=50"`
@@ -30,6 +31,7 @@ type InvoiceResponse struct {
 }
 
 type Invoice struct {
+	InvoiceNo              string
 	InvoiceId              string
 	InvoiceName            string
 	InvoicePaymentStatus   bool
@@ -55,6 +57,7 @@ func NewInvoice(request *InvoiceRequest) *Invoice {
 	invoiceDate := time.Now().Format("02/01/2006")
 
 	return &Invoice{
+		InvoiceNo:              request.InvoiceNo,
 		InvoiceId:              invoiceId,
 		InvoiceName:            request.InvoiceName,
 		InvoicePaymentStatus:   invoicePaymentStatus,
@@ -82,7 +85,7 @@ type InvoicePdf struct {
 	UserGstin            string
 	UserPan              string
 	InvoiceReverseCharge string
-	InvoiceNumber        string
+	InvoiceNo            string
 	InvoiceDate          string
 	InvoiceState         string
 	InvoiceStateCode     string

@@ -10,6 +10,7 @@ import (
 
 func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 	query := `INSERT INTO invoice (
+		invoice_no,
 		invoice_id,
 		invoice_name,
 		invoice_payment_status,
@@ -26,10 +27,11 @@ func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 		billed_id,
 		shipped_id,
 		biller_id
-	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`
+	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`
 
 	_, err := q.db.Exec(
 		query,
+		invoice.InvoiceNo,
 		invoice.InvoiceId,
 		invoice.InvoiceName,
 		invoice.InvoicePaymentStatus,
@@ -149,9 +151,9 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 				u.user_phone,
 				u.user_email,
 			
-
+				i.invoice_no,
 				i.invoice_reverse_charge,
-				i.invoice_number,
+			
 				i.invoice_date,
 				i.invoice_state,
 				i.invoice_state_code,
@@ -178,7 +180,7 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 			JOIN users u ON i.user_id=u.user_id
 		 	JOIN billed r ON i.billed_id=r.billed_id
 			JOIN shipped c ON i.shipped_id=c.shipped_id
-			JOIN biller b ON i.biller_id=b.billed_id
+			JOIN biller b ON i.biller_id=b.biller_id
 
 			WHERE i.invoice_id=$1
 			`
@@ -188,7 +190,6 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 	invoicePdf.GrandTotal = strconv.Itoa(int(grandTotal))
 
 	invoicePdf.Products = productPdfs
-	var invoiceNumber int32
 
 	err = q.db.QueryRow(query2, invoiceId).Scan(
 		&invoicePdf.UserName,
@@ -196,7 +197,8 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 		&invoicePdf.UserEmail,
 
 		&invoicePdf.InvoiceReverseCharge,
-		&invoiceNumber,
+		&invoicePdf.InvoiceNo,
+
 		&invoicePdf.InvoiceDate,
 		&invoicePdf.InvoiceState,
 		&invoicePdf.InvoiceStateCode,
@@ -222,12 +224,9 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 		return nil, err
 	}
 
-	invoicePdf.InvoiceNumber = strconv.Itoa(int(invoiceNumber))
-
 	return &invoicePdf, nil
 
 }
-
 func (q *Query) UpdatePaymentStatus(invoiceId string) error {
 	query := `UPDATE invoice SET invoice_payment_status = TRUE WHERE invoice_id=$1`
 	_, err := q.db.Exec(query, invoiceId)
