@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/vsynclabs/billsoft/internals/models"
@@ -69,7 +70,9 @@ func (handler *InvoiceHandler) DownloadInvoiceHandler(w http.ResponseWriter, r *
 
 	w.Header().Set("Content-Type", "application/pdf")
 	w.WriteHeader(http.StatusOK)
-	utils.GeneratePdf(w, invoicePdf)
+	if err := utils.GeneratePdf(w, invoicePdf); err != nil {
+		log.Println("error occurred while generating the pdf, Error: ", err.Error())
+	}
 }
 
 func (handler *InvoiceHandler) UpdateInvoicePaymentStatusHandler(w http.ResponseWriter, r *http.Request) {

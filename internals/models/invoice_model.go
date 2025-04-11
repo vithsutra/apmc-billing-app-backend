@@ -75,12 +75,16 @@ func NewInvoice(request *InvoiceRequest) *Invoice {
 }
 
 type InvoicePdf struct {
+	BillerId             string
 	UserName             string
 	UserAddress          string
 	UserPhone            string
 	UserEmail            string
 	UserGstin            string
 	UserPan              string
+	Banker               string
+	AcNo                 string
+	IfscCode             string
 	InvoiceReverseCharge string
 	InvoiceNumber        string
 	InvoiceDate          string

@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -16,6 +18,75 @@ const PAGE_HEIGHT float64 = 29.7
 var ones = []string{"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"}
 var tens = []string{"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"}
 
+// Helper to add commas to a float64 formatted string
+func commaSeparated(amount float64) string {
+	// Split the float into integer and decimal parts
+	intPart := int64(amount)
+	decimalPart := int64((amount - float64(intPart)) * 100)
+
+	intStr := strconv.FormatInt(intPart, 10)
+	n := len(intStr)
+
+	// Indian number format: last 3 digits, then groups of 2
+	if n <= 3 {
+		return fmt.Sprintf("%s.%02d", intStr, decimalPart)
+	}
+
+	// Format from the right
+	result := ""
+	for i, count := n-1, 0; i >= 0; i-- {
+		if count == 3 || (count > 3 && (count-3)%2 == 0) {
+			result = "," + result
+		}
+		result = string(intStr[i]) + result
+		count++
+	}
+
+	return fmt.Sprintf("%s.%02d", result, decimalPart)
+}
+
+func formatRupees(paisaStr string) (string, error) {
+	// Convert string paisa to int
+	paisa, err := strconv.Atoi(paisaStr)
+	if err != nil {
+		return "", fmt.Errorf("invalid paisa input: %v", err)
+	}
+
+	// Convert paisa to rupees (float)
+	rupees := float64(paisa) / 100
+
+	// Format as ₹ with commas and 2 decimal places
+	formatted := fmt.Sprintf("₹%s", commaSeparated(rupees))
+
+	return formatted, nil
+}
+
+func textWrapper(pdf *gopdf.GoPdf, text string, maxWidth float64) []string {
+	words := strings.Fields(text)
+	var lines []string
+	var currentLine string
+
+	for _, word := range words {
+		testLine := currentLine + " " + word
+		width, _ := pdf.MeasureTextWidth(testLine)
+
+		if width > maxWidth && currentLine != "" {
+			lines = append(lines, currentLine)
+			currentLine = word
+		} else {
+			if currentLine == "" {
+				currentLine = word
+			} else {
+				currentLine += " " + word
+			}
+		}
+	}
+	if currentLine != "" {
+		lines = append(lines, currentLine)
+	}
+	return lines
+}
+
 func findMainHeaderCordinates(pdf *gopdf.GoPdf, spacing float64, text string) (float64, float64, error) {
 	textWidth, err := pdf.MeasureTextWidth(text)
 
@@ -26,10 +97,15 @@ func findMainHeaderCordinates(pdf *gopdf.GoPdf, spacing float64, text string) (f
 	return (PAGE_WIDTH / 2) - (textWidth / 2), pdf.GetY() + spacing, nil
 }
 
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil || !os.IsNotExist(err)
+}
+
 func GeneratePdf(
 	w http.ResponseWriter,
 	invoicePdf *models.InvoicePdf,
-) {
+) error {
 	pdf := gopdf.GoPdf{}
 
 	pdf.Start(gopdf.Config{
@@ -38,11 +114,11 @@ func GeneratePdf(
 	})
 
 	if err := pdf.AddTTFFont("bold-font", "./font-family/Roboto/static/Roboto-Bold.ttf"); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if err := pdf.AddTTFFont("light-font", "./font-family/Roboto/static/Roboto-Regular.ttf"); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	pdf.AddHeader(func() {
@@ -55,25 +131,43 @@ func GeneratePdf(
 
 		OuterBorderSection(&pdf)
 
+		logoPath := fmt.Sprintf("./uploads/%s.jpeg", invoicePdf.BillerId)
+
+		if fileExists(logoPath) {
+
+			if err := pdf.Image(logoPath, 1.8, 2, &gopdf.Rect{
+				W: 2.5,
+				H: 1.5,
+			}); err != nil {
+				log.Println("error occurred while generating the pdf, Error: ", err.Error())
+				return
+			}
+
+		}
+
 		if err := pdf.SetFont("bold-font", "", 13); err != nil {
-			log.Fatal(err)
+			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			return
 		}
 
 		x, y, err := findMainHeaderCordinates(&pdf, 1.5, header1)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			return
 		}
 
 		pdf.SetXY(x, y)
 		pdf.Text(header1)
 
 		if err := pdf.SetFont("bold-font", "", 9); err != nil {
-			log.Fatal(err)
+			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			return
 		}
 
 		x, y, err = findMainHeaderCordinates(&pdf, 0.5, header2)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			return
 		}
 
 		pdf.SetXY(x, y)
@@ -81,7 +175,8 @@ func GeneratePdf(
 
 		x, y, err = findMainHeaderCordinates(&pdf, 0.5, header3)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			return
 		}
 
 		pdf.SetXY(x, y)
@@ -89,7 +184,8 @@ func GeneratePdf(
 
 		x, y, err = findMainHeaderCordinates(&pdf, 0.5, header4)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			return
 		}
 
 		pdf.SetXY(x, y)
@@ -97,7 +193,8 @@ func GeneratePdf(
 
 		x, y, err = findMainHeaderCordinates(&pdf, 0.5, header5)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			return
 		}
 
 		pdf.SetXY(x, y)
@@ -105,7 +202,8 @@ func GeneratePdf(
 
 		x, y, err = findMainHeaderCordinates(&pdf, 0.5, header6)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			return
 		}
 
 		pdf.SetXY(x, y)
@@ -116,21 +214,29 @@ func GeneratePdf(
 	pdf.AddPage()
 
 	if err := pdf.SetFont("light-font", "", 9); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	taxInvoiceBarSection(&pdf)
+	if err := taxInvoiceBarSection(&pdf); err != nil {
+		return err
+	}
 
-	invoiceInfoSection(
+	if err := invoiceInfoSection(
 		&pdf,
 		invoicePdf,
-	)
+	); err != nil {
+		return err
+	}
 
-	createProductsTableSection(&pdf, invoicePdf)
+	if err := createProductsTableSection(&pdf, invoicePdf); err != nil {
+		return err
+	}
 
 	if _, err := pdf.WriteTo(w); err != nil {
-		log.Fatalln(err)
+		return err
 	}
+
+	return nil
 
 }
 
@@ -141,7 +247,7 @@ func taxInvoiceBarSection(pdf *gopdf.GoPdf) error {
 	pdf.Rectangle(1, 4.6, 20, 6, "DF", 0, 0)
 
 	if err := pdf.SetFont("bold-font", "", 13); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	header1 := "TAX INVOICE"
@@ -174,85 +280,104 @@ func OuterBorderSection(pdf *gopdf.GoPdf) {
 func invoiceInfoSection(
 	pdf *gopdf.GoPdf,
 	invoicePdf *models.InvoicePdf,
-) {
+) error {
 
 	if err := pdf.SetFont("light-font", "", 9); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	pdf.SetStrokeColor(0, 0, 0)
 	pdf.SetLineWidth(0.05)
 	pdf.Line(PAGE_WIDTH/2, 6, PAGE_WIDTH/2, 11)
 
-	//text section
+	//biller info section
 	pdf.SetXY(1.2, 6.5)
-	pdf.Text("Reverse Charge ")
-	pdf.SetXY(6, 6.5)
+	pdf.Text("Reverse Charge")
+	pdf.SetXY(5, 6.5)
 	pdf.Text(": " + invoicePdf.InvoiceReverseCharge)
 
 	x, y := 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
-	pdf.Text("Invoice No. ")
-	pdf.SetXY(6, y)
+	pdf.Text("Invoice No.")
+	pdf.SetXY(5, y)
 	pdf.Text(": " + invoicePdf.InvoiceNumber)
 
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Invoice Date")
-	pdf.SetXY(6, y)
+	pdf.SetXY(5, y)
 	pdf.Text(": " + invoicePdf.InvoiceDate)
 
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("State")
-	pdf.SetXY(6, y)
+	pdf.SetXY(5, y)
 	pdf.Text(": " + invoicePdf.InvoiceState)
 
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("State Code")
-	pdf.SetXY(6, y)
+	pdf.SetXY(5, y)
 	pdf.Text(": " + invoicePdf.InvoiceStateCode)
 
 	x, y = (PAGE_WIDTH/2)+0.2, 6.5
 	pdf.SetXY(x, y)
 	pdf.Text("Challan No.")
-	pdf.SetXY(x+4.8, y)
+	pdf.SetXY(x+3, y)
 	pdf.Text(": " + invoicePdf.InvoiceChallanNumber)
 
-	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.6
+	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Vehicle No.")
-	pdf.SetXY(x+4.8, y)
+	pdf.SetXY(x+3, y)
 	pdf.Text(": " + invoicePdf.InvoiceVehicleNumber)
 
-	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.6
+	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
+	pdf.SetXY(x, y)
+	pdf.Text("Banker")
+	pdf.SetXY(x+3, y)
+	pdf.Text(": " + invoicePdf.Banker)
+
+	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
+	pdf.SetXY(x, y)
+	pdf.Text("A/C. No")
+	pdf.SetXY(x+3, y)
+	pdf.Text(": " + invoicePdf.AcNo)
+
+	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
+	pdf.SetXY(x, y)
+	pdf.Text("IFSC Code")
+	pdf.SetXY(x+3, y)
+	pdf.Text(": " + invoicePdf.IfscCode)
+
+	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Date of Supply")
-	pdf.SetXY(x+4.8, y)
+	pdf.SetXY(x+3, y)
 	pdf.Text(": " + invoicePdf.InvoiceDateOfSupply)
 
-	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.6
+	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Place of Supply")
-	pdf.SetXY(x+4.8, y)
+	pdf.SetXY(x+3, y)
 	pdf.Text(": " + invoicePdf.InvoicePlaceOfSupply)
 
 	pdf.SetFillColor(174, 224, 254)
 	y = pdf.GetY() + 0.5
 	pdf.SetXY(x, y)
 	pdf.Rectangle(1, y, 20, y+1, "DF", 0, 0)
-	pdf.Line(PAGE_WIDTH/2, y, PAGE_WIDTH/2, 13.2)
 
 	if err := pdf.SetFont("bold-font", "", 9.5); err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	billeyInfoSectionY := y
 
 	//next section heading
 	header1 := "Details of Receiver | Billed to:"
 	header1Width, err := pdf.MeasureTextWidth(header1)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	x, y = (PAGE_WIDTH/4)-(header1Width/2), y+0.6
@@ -263,18 +388,18 @@ func invoiceInfoSection(
 	header2 := "Details of Consignee | Shipped to:"
 	header2Width, err := pdf.MeasureTextWidth(header2)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	x = (((PAGE_WIDTH / 2) + 4.5) - (header2Width / 2))
 	pdf.SetXY(x, y)
 	pdf.Text(header2)
 
 	if err := pdf.SetFont("light-font", "", 9); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	//next section data
-	x, y = 1.2, 10.3
+	x, y = 1.2, 11.5
 	pdf.SetXY(x, y)
 	pdf.Text("Name")
 	pdf.SetXY(3.5, y)
@@ -283,8 +408,20 @@ func invoiceInfoSection(
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Address")
-	pdf.SetXY(3.5, y)
-	pdf.Text(":	" + invoicePdf.ReceiverAdddress)
+
+	receiverAddressLines := textWrapper(pdf, invoicePdf.ReceiverAdddress, 6.5)
+
+	for index, line := range receiverAddressLines {
+		if index == 0 {
+			localX, localY := 3.5, y+(float64(index)/2.5)
+			pdf.SetXY(localX, localY)
+			pdf.Text(":	" + line)
+		} else {
+			localX, localY := 3.5, y+(float64(index)/2.5)
+			pdf.SetXY(localX, localY)
+			pdf.Text("  " + line)
+		}
+	}
 
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
@@ -304,8 +441,10 @@ func invoiceInfoSection(
 	pdf.SetXY(3.5, y)
 	pdf.Text(": " + invoicePdf.ReceiverStateCode)
 
+	receiverSectionY := pdf.GetY()
+
 	//next section
-	x, y = (PAGE_WIDTH/2)+0.2, 10.3
+	x, y = (PAGE_WIDTH/2)+0.2, 11.5
 	pdf.SetXY(x, y)
 	pdf.Text("Name")
 	pdf.SetXY(x+2.3, y)
@@ -314,8 +453,20 @@ func invoiceInfoSection(
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Address")
-	pdf.SetXY(x+2.3, y)
-	pdf.Text(": " + invoicePdf.ConsigneeAddress)
+
+	consigneeAddressLines := textWrapper(pdf, invoicePdf.ConsigneeAddress, 6.5)
+
+	for index, line := range consigneeAddressLines {
+		if index == 0 {
+			localX, localY := x+2.3, y+(float64(index)/2.5)
+			pdf.SetXY(localX, localY)
+			pdf.Text(":	" + line)
+		} else {
+			localX, localY := x+2.3, y+(float64(index)/2.5)
+			pdf.SetXY(localX, localY)
+			pdf.Text("  " + line)
+		}
+	}
 
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
@@ -335,12 +486,23 @@ func invoiceInfoSection(
 	pdf.SetXY(x+2.3, y)
 	pdf.Text(": " + invoicePdf.ConsigneeState)
 
-	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.6
+	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("State Code")
 	pdf.SetXY(x+2.3, y)
 	pdf.Text(": " + invoicePdf.ConsigneeStateCode)
 
+	consigneeSectionY := pdf.GetY()
+
+	if consigneeSectionY > receiverSectionY {
+		pdf.SetY(consigneeSectionY)
+	} else {
+		pdf.SetY(receiverSectionY)
+	}
+
+	pdf.Line(PAGE_WIDTH/2, billeyInfoSectionY, PAGE_WIDTH/2, pdf.GetY()+0.5)
+
+	return nil
 }
 
 func convert(num int) string {
@@ -388,18 +550,18 @@ func numberToWords(n int) string {
 	return strings.TrimSpace(strings.Join(parts, " ")) + " Rupees Only"
 }
 
-func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf) {
+func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf) error {
 	pdf.Line(1, PAGE_HEIGHT-4, 20, PAGE_HEIGHT-4)
 	pdf.Line((PAGE_WIDTH/2)+1.5, PAGE_HEIGHT-4, (PAGE_WIDTH/2)+1.5, PAGE_HEIGHT-1)
 
 	if err := pdf.SetFont("bold-font", "", 9); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	pdf.SetXY(1.5, PAGE_HEIGHT-3.5)
 	pdf.Text("Terms and Conditions")
 
 	if err := pdf.SetFont("light-font", "", 9); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	pdf.SetXY(1.5, pdf.GetY()+0.75)
@@ -415,25 +577,25 @@ func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 	text1Width, err := pdf.MeasureTextWidth(text1)
 
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	text2Width, err := pdf.MeasureTextWidth(text2)
 
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	text3Width, err := pdf.MeasureTextWidth(text3)
 
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	text4Width, err := pdf.MeasureTextWidth(text4)
 
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	center := (((PAGE_WIDTH / 2) + 1.5) + 20) / 2
@@ -443,12 +605,12 @@ func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 	pdf.SetXY(center-(text2Width/2), PAGE_HEIGHT-3.15)
 	pdf.Text(text2)
 	if err := pdf.SetFont("bold-font", "", 9); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	pdf.SetXY(center-(text3Width/2), PAGE_HEIGHT-2.5)
 	pdf.Text(text3)
 	if err := pdf.SetFont("light-font", "", 9); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	pdf.SetXY(center-(text4Width/2), PAGE_HEIGHT-1.25)
 	pdf.Text(text4)
@@ -459,37 +621,44 @@ func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 	grandTotal, err := strconv.Atoi(invoicePdf.GrandTotal)
 
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	text1 = "Total Invoice Amount in Words"
+
 	text2 = numberToWords(grandTotal)
 
 	text1Width, err = pdf.MeasureTextWidth(text1)
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	text2Width, err = pdf.MeasureTextWidth(text2)
-	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	center = (1 + (PAGE_WIDTH/2 + 1.5)) / 2
 
 	if err := pdf.SetFont("bold-font", "", 9); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	pdf.SetXY(center-(text1Width/2), PAGE_HEIGHT-5.5)
 	pdf.Text(text1)
 
 	if err := pdf.SetFont("light-font", "", 9); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	pdf.SetXY(center-(text2Width/2), PAGE_HEIGHT-4.75)
-	pdf.Text(text2)
+	text2Lines := textWrapper(pdf, text2, 10)
+
+	for index, line := range text2Lines {
+		lineWidth, err := pdf.MeasureTextWidth(line)
+
+		if err != nil {
+			return err
+		}
+
+		localX, localY := center-(lineWidth/2), (PAGE_HEIGHT-4.75)+(float64(index)/3)
+		pdf.SetXY(localX, localY)
+		pdf.Text(line)
+	}
 
 	pdf.SetFillColor(174, 224, 254)
 	pdf.Rectangle(((PAGE_WIDTH / 2) + 1.5), PAGE_HEIGHT-6, 20, PAGE_HEIGHT-4, "DF", 0, 0)
@@ -505,7 +674,7 @@ func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 	text1Width, err = pdf.MeasureTextWidth(text1)
 
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	pdf.SetXY(center-(text1Width/2), PAGE_HEIGHT-6+0.6)
@@ -514,23 +683,27 @@ func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 	pdf.Text(text1)
 
 	if err := pdf.SetFont("bold-font", "", 9); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	text1 = "₹" + invoicePdf.GrandTotal
-
-	text1Width, err = pdf.MeasureTextWidth(text1)
+	totalAmount, err := formatRupees(invoicePdf.GrandTotal)
 
 	if err != nil {
-		log.Fatalln(err)
+		return err
+	}
+
+	totalAmountWidth, err := pdf.MeasureTextWidth(totalAmount)
+
+	if err != nil {
+		return err
 	}
 
 	center = (((PAGE_WIDTH / 2) + 5.3) + 20) / 2
 
-	pdf.SetXY(center-(text1Width/2), PAGE_HEIGHT-6+0.6)
-	pdf.Text(text1)
-	pdf.SetXY(center-(text1Width/2), ((PAGE_HEIGHT-6+PAGE_HEIGHT-4)/2)+0.6)
-	pdf.Text(text1)
+	pdf.SetXY(center-(totalAmountWidth/2), PAGE_HEIGHT-6+0.6)
+	pdf.Text(totalAmount)
+	pdf.SetXY(center-(totalAmountWidth/2), ((PAGE_HEIGHT-6+PAGE_HEIGHT-4)/2)+0.6)
+	pdf.Text(totalAmount)
 
 	pdf.SetFillColor(174, 224, 254)
 	pdf.Rectangle(1, PAGE_HEIGHT-6.75, 20, PAGE_HEIGHT-6, "DF", 0, 0)
@@ -544,7 +717,7 @@ func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 
 	text1Width, err = pdf.MeasureTextWidth(text1)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	pdf.SetXY(center-(text1Width/2), PAGE_HEIGHT-6.28)
@@ -556,25 +729,21 @@ func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 	text1Width, err = pdf.MeasureTextWidth(text1)
 
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	pdf.SetXY(center-(text1Width/2), PAGE_HEIGHT-6.28)
 	pdf.Text(text1)
 
-	text1 = "₹" + invoicePdf.GrandTotal
-	text1Width, err = pdf.MeasureTextWidth(text1)
-
-	if err != nil {
-		log.Fatalln(err)
-	}
 	center = (((PAGE_WIDTH / 2) + 5.3) + 20) / 2
 
-	pdf.SetXY(center-(text1Width/2), PAGE_HEIGHT-6.28)
-	pdf.Text(text1)
+	pdf.SetXY(center-(totalAmountWidth/2), PAGE_HEIGHT-6.28)
+	pdf.Text(totalAmount)
+
+	return nil
 }
 
-func createProductTableMainPageHeadingSection(pdf *gopdf.GoPdf, isFirstPage bool) {
+func createProductTableMainPageHeadingSection(pdf *gopdf.GoPdf, isFirstPage bool) error {
 	x, y := 1.0, pdf.GetY()+0.3
 	pdf.SetFillColor(174, 224, 254)
 	pdf.Rectangle(x, y, 20, y+1, "DF", 0, 0)
@@ -589,7 +758,7 @@ func createProductTableMainPageHeadingSection(pdf *gopdf.GoPdf, isFirstPage bool
 	}
 
 	if err := pdf.SetFont("bold-font", "", 9.5); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	//first text
@@ -669,9 +838,11 @@ func createProductTableMainPageHeadingSection(pdf *gopdf.GoPdf, isFirstPage bool
 	textX = textX + 3.1
 	pdf.SetXY(textX, textY)
 	pdf.Text("Total")
+
+	return nil
 }
 
-func createProductTableSubPageHeadingSection(pdf *gopdf.GoPdf, isFirstPage bool) {
+func createProductTableSubPageHeadingSection(pdf *gopdf.GoPdf, isFirstPage bool) error {
 	x, y := 1.0, 4.6
 	pdf.SetFillColor(174, 224, 254)
 	pdf.Rectangle(x, y, 20, y+1, "DF", 0, 0)
@@ -686,7 +857,7 @@ func createProductTableSubPageHeadingSection(pdf *gopdf.GoPdf, isFirstPage bool)
 	}
 
 	if err := pdf.SetFont("bold-font", "", 9.5); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	//first text
@@ -766,12 +937,14 @@ func createProductTableSubPageHeadingSection(pdf *gopdf.GoPdf, isFirstPage bool)
 	textX = textX + 3.1
 	pdf.SetXY(textX, textY)
 	pdf.Text("Total")
+
+	return nil
 }
 
-func createProductRowSection(pdf *gopdf.GoPdf, rowHeight float64, serialNumber string, productName string, productHsn string, productQty string, productUnit string, rate string, total string) {
+func createProductRowSection(pdf *gopdf.GoPdf, rowHeight float64, serialNumber string, productName string, productHsn string, productQty string, productUnit string, rate string, total string) error {
 
 	if err := pdf.SetFont("light-font", "", 9); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	pdf.Line(1, pdf.GetY()+rowHeight, 20, pdf.GetY()+rowHeight)
 
@@ -781,7 +954,7 @@ func createProductRowSection(pdf *gopdf.GoPdf, rowHeight float64, serialNumber s
 	text := serialNumber
 	textWidth, err := pdf.MeasureTextWidth(text)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	center := 3.3 / 2
@@ -793,7 +966,7 @@ func createProductRowSection(pdf *gopdf.GoPdf, rowHeight float64, serialNumber s
 	text = productName
 	textWidth, err = pdf.MeasureTextWidth(text)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	center = (2.3 + ((PAGE_WIDTH / 2) - 2.5)) / 2
 	pdf.SetXY(center-(textWidth/2), prevY+0.47)
@@ -803,7 +976,7 @@ func createProductRowSection(pdf *gopdf.GoPdf, rowHeight float64, serialNumber s
 	text = productHsn
 	textWidth, err = pdf.MeasureTextWidth(text)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	center = (((PAGE_WIDTH / 2) - 2.5) + (PAGE_WIDTH / 2)) / 2
 	pdf.SetXY(center-(textWidth/2), prevY+0.47)
@@ -813,7 +986,7 @@ func createProductRowSection(pdf *gopdf.GoPdf, rowHeight float64, serialNumber s
 	text = productQty
 	textWidth, err = pdf.MeasureTextWidth(text)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	center = ((PAGE_WIDTH / 2) + ((PAGE_WIDTH / 2) + 1.5)) / 2
 	pdf.SetXY(center-(textWidth/2), prevY+0.47)
@@ -823,7 +996,7 @@ func createProductRowSection(pdf *gopdf.GoPdf, rowHeight float64, serialNumber s
 	text = productUnit
 	textWidth, err = pdf.MeasureTextWidth(text)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	center = (((PAGE_WIDTH / 2) + 1.5) + ((PAGE_WIDTH / 2) + 3)) / 2
 	pdf.SetXY(center-(textWidth/2), prevY+0.47)
@@ -833,7 +1006,7 @@ func createProductRowSection(pdf *gopdf.GoPdf, rowHeight float64, serialNumber s
 	text = rate
 	textWidth, err = pdf.MeasureTextWidth(text)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	center = ((((PAGE_WIDTH / 2) + 1.5) + 1.5) + (((PAGE_WIDTH / 2) + 1.5) + 1.5) + 2.3) / 2
 	pdf.SetXY(center-(textWidth/2), prevY+0.47)
@@ -843,16 +1016,18 @@ func createProductRowSection(pdf *gopdf.GoPdf, rowHeight float64, serialNumber s
 	text = total
 	textWidth, err = pdf.MeasureTextWidth(text)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	center = (((PAGE_WIDTH / 2) + 5.3) + 20) / 2
 	pdf.SetXY(center-(textWidth/2), prevY+0.47)
 	pdf.Text(text)
 
 	pdf.SetY(prevY + rowHeight)
+
+	return nil
 }
 
-func createProductsTableSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf) {
+func createProductsTableSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf) error {
 
 	mainPageThreshold1 := 12
 	mainPageThreshold2 := 19
@@ -864,30 +1039,53 @@ func createProductsTableSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 	productsLength := len(invoicePdf.Products)
 
 	if productsLength <= mainPageThreshold1 {
-		createProductTableMainPageHeadingSection(pdf, true)
-		createProductFooterSection(pdf, invoicePdf)
+		if err := createProductTableMainPageHeadingSection(pdf, true); err != nil {
+			return err
+		}
+		if err := createProductFooterSection(pdf, invoicePdf); err != nil {
+			return err
+		}
 
 		pdf.SetY(prevY + 1.3)
 
 		totoalRowHeight := PAGE_HEIGHT - (6.75 + pdf.GetY())
-		singleRowHeight := totoalRowHeight / 12
+
+		var singleRowHeightThreshold float64
+
+		if pdf.GetY() <= 16 {
+			singleRowHeightThreshold = 10
+		} else if (pdf.GetY() >= 16) && (pdf.GetY() <= 18) {
+			singleRowHeightThreshold = 8
+		} else {
+			singleRowHeightThreshold = 4
+		}
+
+		singleRowHeight := totoalRowHeight / singleRowHeightThreshold
 
 		for index, product := range invoicePdf.Products {
-			createProductRowSection(pdf, singleRowHeight, strconv.Itoa(index+1), product.ProductName, product.ProductHsn, product.ProductQty, product.ProductUnit, product.ProductRate, product.Total)
+			if err := createProductRowSection(pdf, singleRowHeight, strconv.Itoa(index+1), product.ProductName, product.ProductHsn, product.ProductQty, product.ProductUnit, product.ProductRate, product.Total); err != nil {
+				return err
+			}
 		}
 	} else if productsLength <= mainPageThreshold2 {
-		createProductTableMainPageHeadingSection(pdf, false)
+		if err := createProductTableMainPageHeadingSection(pdf, false); err != nil {
+			return err
+		}
 		pdf.SetY(prevY + 1.3)
 
 		totoalRowHeight := PAGE_HEIGHT - (6.75 + pdf.GetY())
 		singleRowHeight := totoalRowHeight / 12
 
 		for index, product := range invoicePdf.Products {
-			createProductRowSection(pdf, singleRowHeight, strconv.Itoa(index+1), product.ProductName, product.ProductHsn, product.ProductQty, product.ProductUnit, product.ProductRate, product.Total)
+			if err := createProductRowSection(pdf, singleRowHeight, strconv.Itoa(index+1), product.ProductName, product.ProductHsn, product.ProductQty, product.ProductUnit, product.ProductRate, product.Total); err != nil {
+				return err
+			}
 		}
 
 		pdf.AddPage()
-		createProductTableSubPageHeadingSection(pdf, true)
+		if err := createProductTableSubPageHeadingSection(pdf, true); err != nil {
+			return err
+		}
 		createProductFooterSection(pdf, invoicePdf)
 
 	} else {
@@ -920,20 +1118,30 @@ func createProductsTableSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 			if pageCounter == 0 {
 				pdf.AddPage()
 				if productsLength <= subPageThreshold1 {
-					createProductTableSubPageHeadingSection(pdf, true)
-					createProductFooterSection(pdf, invoicePdf)
+					if err := createProductTableSubPageHeadingSection(pdf, true); err != nil {
+						return err
+					}
+					if err := createProductFooterSection(pdf, invoicePdf); err != nil {
+						return err
+					}
 					pageWithFooter = true
 				} else {
-					createProductTableSubPageHeadingSection(pdf, false)
+					if err := createProductTableSubPageHeadingSection(pdf, false); err != nil {
+						return err
+					}
 				}
 
 				pdf.SetY(5.6)
 			}
 
 			if pageWithFooter {
-				createProductRowSection(pdf, singleRowHeight2, strconv.Itoa(i+1), invoicePdf.Products[i].ProductName, invoicePdf.Products[i].ProductHsn, invoicePdf.Products[i].ProductQty, invoicePdf.Products[i].ProductUnit, invoicePdf.Products[i].ProductRate, invoicePdf.Products[i].Total)
+				if err := createProductRowSection(pdf, singleRowHeight2, strconv.Itoa(i+1), invoicePdf.Products[i].ProductName, invoicePdf.Products[i].ProductHsn, invoicePdf.Products[i].ProductQty, invoicePdf.Products[i].ProductUnit, invoicePdf.Products[i].ProductRate, invoicePdf.Products[i].Total); err != nil {
+					return err
+				}
 			} else {
-				createProductRowSection(pdf, singleRowHeight1, strconv.Itoa(i+1), invoicePdf.Products[i].ProductName, invoicePdf.Products[i].ProductHsn, invoicePdf.Products[i].ProductQty, invoicePdf.Products[i].ProductUnit, invoicePdf.Products[i].ProductRate, invoicePdf.Products[i].Total)
+				if err := createProductRowSection(pdf, singleRowHeight1, strconv.Itoa(i+1), invoicePdf.Products[i].ProductName, invoicePdf.Products[i].ProductHsn, invoicePdf.Products[i].ProductQty, invoicePdf.Products[i].ProductUnit, invoicePdf.Products[i].ProductRate, invoicePdf.Products[i].Total); err != nil {
+					return err
+				}
 			}
 
 			pageCounter++
@@ -942,8 +1150,14 @@ func createProductsTableSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 
 		if !pageWithFooter {
 			pdf.AddPage()
-			createProductTableSubPageHeadingSection(pdf, true)
-			createProductFooterSection(pdf, invoicePdf)
+			if err := createProductTableSubPageHeadingSection(pdf, true); err != nil {
+				return err
+			}
+			if err := createProductFooterSection(pdf, invoicePdf); err != nil {
+				return err
+			}
 		}
 	}
+
+	return nil
 }

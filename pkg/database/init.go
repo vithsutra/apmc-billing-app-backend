@@ -35,7 +35,6 @@ func (q *Query) InitilizeDatabase() error {
 			biller_companylogo VARCHAR(100) NOT NULL DEFAULT 'PENDING',
 			user_id VARCHAR(100) NOT NULL,
 			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-
 		)`,
 
 		`CREATE TABLE IF NOT EXISTS shipped(
@@ -100,7 +99,6 @@ func (q *Query) InitilizeDatabase() error {
 			expire_time TIMESTAMPTZ NOT NULL,
 			created_at TIMESTAMPTZ DEFAULT NOW(),
 			FOREIGN KEY (email) REFERENCES users(user_email) ON DELETE CASCADE
-
 		)
 			`,
 	}

@@ -108,8 +108,8 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 
 	var productPdfs []*models.ProductPdf
 
-	var grandTotal int32 = 0
-	var totalQty int32 = 0
+	var grandTotal float64 = 0
+	var totalQty float64 = 0
 
 	for rows.Next() {
 		var productPdf models.ProductPdf
@@ -125,31 +125,38 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 			return nil, err
 		}
 
-		totalPrice, err := strconv.Atoi(productPdf.Total)
+		totalPrice, err := strconv.ParseFloat(productPdf.Total, 64)
 
 		if err != nil {
 			return nil, err
 		}
 
-		grandTotal += int32(totalPrice)
+		grandTotal += totalPrice
 
-		productQty, err := strconv.Atoi(productPdf.ProductQty)
+		productQty, err := strconv.ParseFloat(productPdf.ProductQty, 64)
 
 		if err != nil {
 			log.Println(err)
 		}
 
-		totalQty += int32(productQty)
+		totalQty += productQty
 
 		productPdfs = append(productPdfs, &productPdf)
 	}
 
 	query2 := `SELECT
-				u.user_name,
-				u.user_phone,
-				u.user_email,
-			
+				b.biller_id,
+				b.biller_name,
+				b.biller_address,
+				b.biller_mobile,
+				b.biller_mail,
+				b.biller_gstin,
+				b.biller_pan,
 
+				ba.bank_name,
+				ba.bank_ifsc_code,
+				ba.bank_account_number,
+			
 				i.invoice_reverse_charge,
 				i.invoice_number,
 				i.invoice_date,
@@ -175,10 +182,13 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 				c.shipped_state_code
 
 			FROM invoice i
-			JOIN users u ON i.user_id=u.user_id
+			JOIN biller b ON i.biller_id=b.biller_id
 		 	JOIN billed r ON i.billed_id=r.billed_id
 			JOIN shipped c ON i.shipped_id=c.shipped_id
-			JOIN biller b ON i.biller_id=b.billed_id
+			
+			JOIN users u ON i.user_id=u.user_id
+
+			JOIN banker ba ON u.bank_id=ba.bank_id
 
 			WHERE i.invoice_id=$1
 			`
@@ -191,9 +201,17 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 	var invoiceNumber int32
 
 	err = q.db.QueryRow(query2, invoiceId).Scan(
+		&invoicePdf.BillerId,
 		&invoicePdf.UserName,
+		&invoicePdf.UserAddress,
 		&invoicePdf.UserPhone,
 		&invoicePdf.UserEmail,
+		&invoicePdf.UserGstin,
+		&invoicePdf.UserPan,
+
+		&invoicePdf.Banker,
+		&invoicePdf.IfscCode,
+		&invoicePdf.AcNo,
 
 		&invoicePdf.InvoiceReverseCharge,
 		&invoiceNumber,
@@ -205,11 +223,13 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 		&invoicePdf.InvoiceDateOfSupply,
 		&invoicePdf.InvoicePlaceOfSupply,
 		&invoicePdf.InvoiceGst,
+
 		&invoicePdf.ReceiverName,
 		&invoicePdf.ReceiverAdddress,
 		&invoicePdf.ReceiverGstin,
 		&invoicePdf.ReceiverState,
 		&invoicePdf.ReceiverStateCode,
+
 		&invoicePdf.ConsigneeName,
 		&invoicePdf.ConsigneeAddress,
 		&invoicePdf.ConsigneeGstin,
