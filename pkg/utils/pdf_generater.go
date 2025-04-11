@@ -301,7 +301,7 @@ func invoiceInfoSection(
 	pdf.SetXY(x, y)
 	pdf.Text("Invoice No.")
 	pdf.SetXY(5, y)
-	pdf.Text(": " + invoicePdf.InvoiceNumber)
+	pdf.Text(": " + invoicePdf.InvoiceNo)
 
 	x, y = 1.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)

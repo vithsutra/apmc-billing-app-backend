@@ -10,6 +10,7 @@ import (
 
 func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 	query := `INSERT INTO invoice (
+		invoice_no,
 		invoice_id,
 		invoice_name,
 		invoice_payment_status,
@@ -27,10 +28,11 @@ func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 		shipped_id,
 		biller_id,
 		bank__id
-	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`
+	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`
 
 	_, err := q.db.Exec(
 		query,
+		invoice.InvoiceNo,
 		invoice.InvoiceId,
 		invoice.InvoiceName,
 		invoice.InvoicePaymentStatus,
@@ -161,8 +163,8 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 				ba.bank_ifsc_code,
 				ba.bank_account_number,
 			
+				i.invoice_no,
 				i.invoice_reverse_charge,
-				i.invoice_number,
 				i.invoice_date,
 				i.invoice_state,
 				i.invoice_state_code,
@@ -202,7 +204,6 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 	invoicePdf.GrandTotal = strconv.Itoa(int(grandTotal))
 
 	invoicePdf.Products = productPdfs
-	var invoiceNumber int32
 
 	err = q.db.QueryRow(query2, invoiceId).Scan(
 		&invoicePdf.BillerId,
@@ -219,7 +220,7 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 		&invoicePdf.AcNo,
 
 		&invoicePdf.InvoiceReverseCharge,
-		&invoiceNumber,
+		&invoicePdf.InvoiceNo,
 		&invoicePdf.InvoiceDate,
 		&invoicePdf.InvoiceState,
 		&invoicePdf.InvoiceStateCode,
@@ -246,8 +247,6 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	invoicePdf.InvoiceNumber = strconv.Itoa(int(invoiceNumber))
 
 	return &invoicePdf, nil
 

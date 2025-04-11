@@ -51,10 +51,10 @@ func (q *Query) InitilizeDatabase() error {
 
 		`CREATE TABLE IF NOT EXISTS invoice(
 			invoice_id VARCHAR(100) PRIMARY KEY,
+			invoice_no VARCHAR(100) NOT NULL,
 			invoice_name VARCHAR(100) NOT NULL,
 			invoice_payment_status BOOLEAN NOT NULL,
 			invoice_reverse_charge VARCHAR(100)NOT NULL,
-			invoice_number SERIAL UNIQUE,
 			invoice_date VARCHAR(100) NOT NULL,
 			invoice_state VARCHAR(100) NOT NULL,
 			invoice_state_code VARCHAR(100) NOT NULL,
