@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -18,47 +19,46 @@ const PAGE_HEIGHT float64 = 29.7
 var ones = []string{"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"}
 var tens = []string{"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"}
 
-// Helper to add commas to a float64 formatted string
+func formatRupees(paisaStr string) (string, error) {
+	var rupees float64
+	var err error
+
+	if strings.Contains(paisaStr, ".") {
+		// Treat as paisa → convert to float, divide by 100
+		paisaFloat, err := strconv.ParseFloat(paisaStr, 64)
+		if err != nil {
+			return "", fmt.Errorf("invalid paisa input: %v", err)
+		}
+		rupees = paisaFloat / 100.0
+	} else {
+		// Treat as rupees
+		rupeeInt, err := strconv.ParseInt(paisaStr, 10, 64)
+		if err != nil {
+			return "", fmt.Errorf("invalid rupee input: %v", err)
+		}
+		rupees = float64(rupeeInt)
+	}
+
+	// Format with ₹, commas, and 2 decimal places
+	formatted := fmt.Sprintf("₹%s", commaSeparated(rupees))
+	return formatted, err
+}
+
 func commaSeparated(amount float64) string {
-	// Split the float into integer and decimal parts
 	intPart := int64(amount)
 	decimalPart := int64((amount - float64(intPart)) * 100)
 
-	intStr := strconv.FormatInt(intPart, 10)
-	n := len(intStr)
-
-	// Indian number format: last 3 digits, then groups of 2
-	if n <= 3 {
-		return fmt.Sprintf("%s.%02d", intStr, decimalPart)
-	}
-
-	// Format from the right
-	result := ""
-	for i, count := n-1, 0; i >= 0; i-- {
-		if count == 3 || (count > 3 && (count-3)%2 == 0) {
-			result = "," + result
+	// Format Indian-style commas
+	s := strconv.FormatInt(intPart, 10)
+	n := len(s)
+	if n > 3 {
+		s = s[:n-3] + "," + s[n-3:]
+		for i := n - 3 - 2; i > 0; i -= 2 {
+			s = s[:i] + "," + s[i:]
 		}
-		result = string(intStr[i]) + result
-		count++
 	}
 
-	return fmt.Sprintf("%s.%02d", result, decimalPart)
-}
-
-func formatRupees(paisaStr string) (string, error) {
-	// Convert string paisa to int
-	paisa, err := strconv.Atoi(paisaStr)
-	if err != nil {
-		return "", fmt.Errorf("invalid paisa input: %v", err)
-	}
-
-	// Convert paisa to rupees (float)
-	rupees := float64(paisa) / 100
-
-	// Format as ₹ with commas and 2 decimal places
-	formatted := fmt.Sprintf("₹%s", commaSeparated(rupees))
-
-	return formatted, nil
+	return fmt.Sprintf("%s.%02d", s, decimalPart)
 }
 
 func textWrapper(pdf *gopdf.GoPdf, text string, maxWidth float64) []string {
@@ -87,6 +87,11 @@ func textWrapper(pdf *gopdf.GoPdf, text string, maxWidth float64) []string {
 	return lines
 }
 
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil || !os.IsNotExist(err)
+}
+
 func findMainHeaderCordinates(pdf *gopdf.GoPdf, spacing float64, text string) (float64, float64, error) {
 	textWidth, err := pdf.MeasureTextWidth(text)
 
@@ -95,11 +100,6 @@ func findMainHeaderCordinates(pdf *gopdf.GoPdf, spacing float64, text string) (f
 	}
 
 	return (PAGE_WIDTH / 2) - (textWidth / 2), pdf.GetY() + spacing, nil
-}
-
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil || !os.IsNotExist(err)
 }
 
 func GeneratePdf(
@@ -134,7 +134,6 @@ func GeneratePdf(
 		logoPath := fmt.Sprintf("./uploads/%s.jpeg", invoicePdf.BillerId)
 
 		if fileExists(logoPath) {
-
 			if err := pdf.Image(logoPath, 1.8, 2, &gopdf.Rect{
 				W: 2.5,
 				H: 1.5,
@@ -334,9 +333,15 @@ func invoiceInfoSection(
 
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
-	pdf.Text("Banker")
+	pdf.Text("Bank Name")
 	pdf.SetXY(x+3, y)
-	pdf.Text(": " + invoicePdf.Banker)
+	pdf.Text(": " + invoicePdf.BankName)
+
+	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
+	pdf.SetXY(x, y)
+	pdf.Text("Bank Branch")
+	pdf.SetXY(x+3, y)
+	pdf.Text(": " + invoicePdf.BankBranch)
 
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
@@ -399,7 +404,7 @@ func invoiceInfoSection(
 	}
 
 	//next section data
-	x, y = 1.2, 11.5
+	x, y = 1.2, 12
 	pdf.SetXY(x, y)
 	pdf.Text("Name")
 	pdf.SetXY(3.5, y)
@@ -444,7 +449,7 @@ func invoiceInfoSection(
 	receiverSectionY := pdf.GetY()
 
 	//next section
-	x, y = (PAGE_WIDTH/2)+0.2, 11.5
+	x, y = (PAGE_WIDTH/2)+0.2, 12
 	pdf.SetXY(x, y)
 	pdf.Text("Name")
 	pdf.SetXY(x+2.3, y)
@@ -453,7 +458,10 @@ func invoiceInfoSection(
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Address")
-
+	invoicePdf.ConsigneeAddress = `
+	Heloworld Heloworld Heloworld Heloworld
+	Heloworld Heloworld Heloworld Heloworld
+	`
 	consigneeAddressLines := textWrapper(pdf, invoicePdf.ConsigneeAddress, 6.5)
 
 	for index, line := range consigneeAddressLines {
@@ -518,38 +526,47 @@ func convert(num int) string {
 	return ones[num/100] + " Hundred " + convert(num%100)
 }
 
-func numberToWords(n int) string {
+func numberToWords(n float64) string {
 	if n == 0 {
 		return "Zero Rupees Only"
 	}
+
+	rupees := int(n)
+	paise := int(math.Round((n - float64(rupees)) * 100))
+
 	parts := []string{}
 
-	// Handle Crores
-	if n >= 10000000 {
-		parts = append(parts, convert(n/10000000)+" Crore")
-		n %= 10000000
+	// Crores
+	if rupees >= 10000000 {
+		parts = append(parts, convert(rupees/10000000)+" Crore")
+		rupees %= 10000000
 	}
 
-	// Handle Lakhs
-	if n >= 100000 {
-		parts = append(parts, convert(n/100000)+" Lakh")
-		n %= 100000
+	// Lakhs
+	if rupees >= 100000 {
+		parts = append(parts, convert(rupees/100000)+" Lakh")
+		rupees %= 100000
 	}
 
-	// Handle Thousands
-	if n >= 1000 {
-		parts = append(parts, convert(n/1000)+" Thousand")
-		n %= 1000
+	// Thousands
+	if rupees >= 1000 {
+		parts = append(parts, convert(rupees/1000)+" Thousand")
+		rupees %= 1000
 	}
 
-	// Handle Hundreds & Below
-	if n > 0 {
-		parts = append(parts, convert(n))
+	// Remaining
+	if rupees > 0 {
+		parts = append(parts, convert(rupees))
 	}
 
-	return strings.TrimSpace(strings.Join(parts, " ")) + " Rupees Only"
+	result := strings.TrimSpace(strings.Join(parts, " ")) + " Rupees"
+
+	if paise > 0 {
+		result += " and " + convert(paise) + " Paise"
+	}
+
+	return result + " Only"
 }
-
 func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf) error {
 	pdf.Line(1, PAGE_HEIGHT-4, 20, PAGE_HEIGHT-4)
 	pdf.Line((PAGE_WIDTH/2)+1.5, PAGE_HEIGHT-4, (PAGE_WIDTH/2)+1.5, PAGE_HEIGHT-1)
@@ -618,7 +635,7 @@ func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 	pdf.Line(1, PAGE_HEIGHT-6, 20, PAGE_HEIGHT-6)
 	pdf.Line((PAGE_WIDTH/2)+1.5, PAGE_HEIGHT-6, (PAGE_WIDTH/2)+1.5, PAGE_HEIGHT-4)
 
-	grandTotal, err := strconv.Atoi(invoicePdf.GrandTotal)
+	grandTotal, err := strconv.ParseFloat(invoicePdf.GrandTotal, 64)
 
 	if err != nil {
 		return err
@@ -686,7 +703,9 @@ func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 		return err
 	}
 
-	totalAmount, err := formatRupees(invoicePdf.GrandTotal)
+	log.Println(invoicePdf.GrandTotal)
+
+	totalAmount, err := formatRupees("25000")
 
 	if err != nil {
 		return err

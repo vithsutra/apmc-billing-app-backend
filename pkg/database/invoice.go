@@ -154,6 +154,7 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 				b.biller_pan,
 
 				ba.bank_name,
+				ba.bank_branch,
 				ba.bank_ifsc_code,
 				ba.bank_account_number,
 			
@@ -209,7 +210,8 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 		&invoicePdf.UserGstin,
 		&invoicePdf.UserPan,
 
-		&invoicePdf.Banker,
+		&invoicePdf.BankName,
+		&invoicePdf.BankBranch,
 		&invoicePdf.IfscCode,
 		&invoicePdf.AcNo,
 

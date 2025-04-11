@@ -82,7 +82,8 @@ type InvoicePdf struct {
 	UserEmail            string
 	UserGstin            string
 	UserPan              string
-	Banker               string
+	BankName             string
+	BankBranch           string
 	AcNo                 string
 	IfscCode             string
 	InvoiceReverseCharge string
