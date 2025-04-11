@@ -458,10 +458,7 @@ func invoiceInfoSection(
 	x, y = (PAGE_WIDTH/2)+0.2, pdf.GetY()+0.5
 	pdf.SetXY(x, y)
 	pdf.Text("Address")
-	invoicePdf.ConsigneeAddress = `
-	Heloworld Heloworld Heloworld Heloworld
-	Heloworld Heloworld Heloworld Heloworld
-	`
+
 	consigneeAddressLines := textWrapper(pdf, invoicePdf.ConsigneeAddress, 6.5)
 
 	for index, line := range consigneeAddressLines {
@@ -703,9 +700,7 @@ func createProductFooterSection(pdf *gopdf.GoPdf, invoicePdf *models.InvoicePdf)
 		return err
 	}
 
-	log.Println(invoicePdf.GrandTotal)
-
-	totalAmount, err := formatRupees("25000")
+	totalAmount, err := formatRupees(invoicePdf.GrandTotal)
 
 	if err != nil {
 		return err
