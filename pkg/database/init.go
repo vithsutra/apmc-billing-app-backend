@@ -67,6 +67,7 @@ func (q *Query) InitilizeDatabase() error {
 			billed_id VARCHAR(100) NOT NULL,
 			shipped_id VARCHAR(100) NOT NULL,
 			biller_id VARCHAR(100) NOT NULL,
+			bank__id VARCHAR(100) NOT NULL,
 			FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
 			FOREIGN KEY (billed_id) REFERENCES billed(billed_id) ON DELETE CASCADE,
 			FOREIGN KEY (shipped_id) REFERENCES shipped(shipped_id) ON DELETE CASCADE,

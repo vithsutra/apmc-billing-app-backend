@@ -25,8 +25,9 @@ func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 		user_id,
 		billed_id,
 		shipped_id,
-		biller_id
-	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`
+		biller_id,
+		bank__id
+	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`
 
 	_, err := q.db.Exec(
 		query,
@@ -46,6 +47,7 @@ func (q *Query) CreateInvoice(invoice *models.Invoice) error {
 		invoice.BilledId,
 		invoice.ShippedId,
 		invoice.BillerId,
+		invoice.BankId,
 	)
 
 	if err != nil {
@@ -153,6 +155,7 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 				b.biller_gstin,
 				b.biller_pan,
 
+				ba.bank_id,
 				ba.bank_name,
 				ba.bank_branch,
 				ba.bank_ifsc_code,
@@ -189,7 +192,7 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 			
 			JOIN users u ON i.user_id=u.user_id
 
-			JOIN banker ba ON ba.user_id=u.user_id
+			JOIN banker ba ON i.bank__id=ba.bank_id
 
 			WHERE i.invoice_id=$1
 			`
