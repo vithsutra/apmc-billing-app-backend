@@ -131,7 +131,7 @@ func GeneratePdf(
 
 		OuterBorderSection(&pdf)
 
-		logoPath := fmt.Sprintf("./uploads/%s.jpg", invoicePdf.BillerId)
+		logoPath := fmt.Sprintf("./uploads/logos/%s.jpg", invoicePdf.BillerId)
 
 		if fileExists(logoPath) {
 			if err := pdf.Image(logoPath, 1.8, 2, &gopdf.Rect{
