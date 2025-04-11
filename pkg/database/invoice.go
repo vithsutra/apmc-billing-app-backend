@@ -189,7 +189,7 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 			
 			JOIN users u ON i.user_id=u.user_id
 
-			JOIN banker ba ON u.bank_id=ba.bank_id
+			JOIN banker ba ON ba.user_id=u.user_id
 
 			WHERE i.invoice_id=$1
 			`
