@@ -156,8 +156,7 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 				b.biller_mail,
 				b.biller_gstin,
 				b.biller_pan,
-
-				ba.bank_id,
+				
 				ba.bank_name,
 				ba.bank_branch,
 				ba.bank_ifsc_code,
@@ -191,10 +190,7 @@ func (q *Query) DownloadInvoice(invoiceId string) (*models.InvoicePdf, error) {
 			JOIN biller b ON i.biller_id=b.biller_id
 		 	JOIN billed r ON i.billed_id=r.billed_id
 			JOIN shipped c ON i.shipped_id=c.shipped_id
-			
-			JOIN users u ON i.user_id=u.user_id
-
-			JOIN banker ba ON i.bank_id=ba.bank_id
+			JOIN banker ba ON i.bank_id = ba.bank_id
 
 			WHERE i.invoice_id=$1
 			`

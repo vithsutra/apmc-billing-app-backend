@@ -133,8 +133,6 @@ func GeneratePdf(
 
 		logoPath := fmt.Sprintf("./uploads/logos/%s.jpg", invoicePdf.BillerId)
 
-		log.Println(logoPath)
-
 		if fileExists(logoPath) {
 			if err := pdf.Image(logoPath, 1.8, 2, &gopdf.Rect{
 				W: 2.5,
