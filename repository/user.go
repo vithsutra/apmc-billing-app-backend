@@ -122,10 +122,11 @@ func (ur *UserRepo) UserForgotPassword(r *http.Request) (int32, error) {
 	emailBody.EmailType = "otp"
 	emailBody.Data = map[string]string{
 		"otp":         otp,
-		"expire_time": "4",
+		"expire_time": "5",
 	}
 
 	jsonBytes, err := json.Marshal(emailBody)
+
 	if err != nil {
 		log.Println("Error marshaling email body:", err)
 		return 500, errors.New("internal server error")
