@@ -31,7 +31,7 @@ func NewBillerRepo(db *sql.DB, s3Client *storage.LocalFileStorage) *BillerRepo {
 }
 func (b *BillerRepo) CreateBillerWithLogo(r *http.Request) error {
 
-	err := r.ParseMultipartForm(10 << 20) // 10 MB
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		log.Println("Error parsing multipart form:", err)
 		return fmt.Errorf("form parsing error: %w", err)
@@ -71,6 +71,11 @@ func (b *BillerRepo) CreateBillerWithLogo(r *http.Request) error {
 	buf := new(bytes.Buffer)
 	if _, err := io.Copy(buf, file); err != nil {
 		return fmt.Errorf("file copy error: %w", err)
+	}
+
+	fileType := http.DetectContentType(buf.Bytes()[:512])
+	if !strings.HasPrefix(fileType, "image/") {
+		return fmt.Errorf("invalid file type: %s (must be an image)", fileType)
 	}
 
 	biller.BillerId = uuid.NewString()
