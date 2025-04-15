@@ -132,9 +132,8 @@ func GeneratePdf(
 		OuterBorderSection(&pdf)
 
 		logoPath := fmt.Sprintf("./uploads/logos/%s", invoicePdf.BillerId)
-
-		log.Println(logoPath)
-
+		log.Println("Logo Path:", logoPath)
+		log.Println("File exists, adding logo to PDF")
 		if fileExists(logoPath) {
 			if err := pdf.Image(logoPath, 1.8, 2, &gopdf.Rect{
 				W: 2.5,
@@ -142,8 +141,9 @@ func GeneratePdf(
 			}); err != nil {
 				log.Println("error occurred while generating the pdf, Error: ", err.Error())
 				return
+			} else {
+				log.Println("Logo file does not exist:", logoPath)
 			}
-
 		}
 
 		if err := pdf.SetFont("bold-font", "", 13); err != nil {
@@ -211,9 +211,7 @@ func GeneratePdf(
 		pdf.Text(header6)
 
 	})
-
 	pdf.AddPage()
-
 	if err := pdf.SetFont("light-font", "", 9); err != nil {
 		return err
 	}
