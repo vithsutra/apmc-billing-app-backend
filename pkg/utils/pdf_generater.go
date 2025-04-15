@@ -131,7 +131,7 @@ func GeneratePdf(
 
 		OuterBorderSection(&pdf)
 
-		logoPath := fmt.Sprintf("./uploads/logos/%s.jpg", invoicePdf.BillerId)
+		logoPath := fmt.Sprintf("./uploads/logos/%s", invoicePdf.BillerId)
 
 		log.Println(logoPath)
 
