@@ -102,17 +102,32 @@ func findMainHeaderCordinates(pdf *gopdf.GoPdf, spacing float64, text string) (f
 	return (PAGE_WIDTH / 2) - (textWidth / 2), pdf.GetY() + spacing, nil
 }
 
+func findLogoPath(billerId string) (string, error) {
+	extensions := []string{".png", ".jpg", ".jpeg"}
+	for _, ext := range extensions {
+		path := fmt.Sprintf("./uploads/logos/%s-logo%s", billerId, ext)
+
+		if fileExists(path) {
+			return path, nil
+		}
+	}
+	return "", fmt.Errorf("logo not found for billerId: %s", billerId)
+}
+
+// GeneratePdf generates the invoice PDF
 func GeneratePdf(
 	w http.ResponseWriter,
 	invoicePdf *models.InvoicePdf,
 ) error {
 	pdf := gopdf.GoPdf{}
 
+	// Start the PDF with A4 size
 	pdf.Start(gopdf.Config{
 		PageSize: *gopdf.PageSizeA4,
 		Unit:     gopdf.UnitCM,
 	})
 
+	// Add fonts
 	if err := pdf.AddTTFFont("bold-font", "./font-family/Roboto/static/Roboto-Bold.ttf"); err != nil {
 		return err
 	}
@@ -121,6 +136,7 @@ func GeneratePdf(
 		return err
 	}
 
+	// Add header content
 	pdf.AddHeader(func() {
 		header1 := invoicePdf.UserName
 		header2 := invoicePdf.UserAddress
@@ -129,89 +145,90 @@ func GeneratePdf(
 		header5 := "GSTIN:" + invoicePdf.UserGstin
 		header6 := "PAN No:" + invoicePdf.UserPan
 
+		// Draw the outer border of the header
 		OuterBorderSection(&pdf)
 
-		logoPath := fmt.Sprintf("./uploads/logos/%s", invoicePdf.BillerId)
+		// Try to find and render the logo image
+		logoPath, err := findLogoPath(invoicePdf.BillerId)
+		if err != nil {
+			log.Println("Error: ", err.Error())
+		} else {
+			log.Println("Logo Path: ", logoPath) // Log the correct logo path
 
-		if fileExists(logoPath) {
+			// Render the logo on the PDF at specified coordinates
 			if err := pdf.Image(logoPath, 1.8, 2, &gopdf.Rect{
 				W: 2.5,
 				H: 1.5,
 			}); err != nil {
-				log.Println("error occurred while generating the pdf, Error: ", err.Error())
-				return
+				log.Println("Error occurred while rendering the logo: ", err.Error())
 			}
-
 		}
 
+		// Set fonts and render header content
 		if err := pdf.SetFont("bold-font", "", 13); err != nil {
-			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			log.Println("Error: ", err.Error())
 			return
 		}
 
+		// Render other headers
 		x, y, err := findMainHeaderCordinates(&pdf, 1.5, header1)
 		if err != nil {
-			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			log.Println("Error: ", err.Error())
 			return
 		}
-
 		pdf.SetXY(x, y)
 		pdf.Text(header1)
 
 		if err := pdf.SetFont("bold-font", "", 9); err != nil {
-			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			log.Println("Error: ", err.Error())
 			return
 		}
 
 		x, y, err = findMainHeaderCordinates(&pdf, 0.5, header2)
 		if err != nil {
-			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			log.Println("Error: ", err.Error())
 			return
 		}
-
 		pdf.SetXY(x, y)
 		pdf.Text(header2)
 
 		x, y, err = findMainHeaderCordinates(&pdf, 0.5, header3)
 		if err != nil {
-			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			log.Println("Error: ", err.Error())
 			return
 		}
-
 		pdf.SetXY(x, y)
 		pdf.Text(header3)
 
 		x, y, err = findMainHeaderCordinates(&pdf, 0.5, header4)
 		if err != nil {
-			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			log.Println("Error: ", err.Error())
 			return
 		}
-
 		pdf.SetXY(x, y)
 		pdf.Text(header4)
 
 		x, y, err = findMainHeaderCordinates(&pdf, 0.5, header5)
 		if err != nil {
-			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			log.Println("Error: ", err.Error())
 			return
 		}
-
 		pdf.SetXY(x, y)
 		pdf.Text(header5)
 
 		x, y, err = findMainHeaderCordinates(&pdf, 0.5, header6)
 		if err != nil {
-			log.Println("error occurred while generating the pdf, Error: ", err.Error())
+			log.Println("Error: ", err.Error())
 			return
 		}
-
 		pdf.SetXY(x, y)
 		pdf.Text(header6)
-
 	})
 
+	// Add a new page for the invoice content
 	pdf.AddPage()
 
+	// Set font and add tax and invoice information
 	if err := pdf.SetFont("light-font", "", 9); err != nil {
 		return err
 	}
@@ -220,23 +237,21 @@ func GeneratePdf(
 		return err
 	}
 
-	if err := invoiceInfoSection(
-		&pdf,
-		invoicePdf,
-	); err != nil {
+	if err := invoiceInfoSection(&pdf, invoicePdf); err != nil {
 		return err
 	}
 
+	// Create the product table section
 	if err := createProductsTableSection(&pdf, invoicePdf); err != nil {
 		return err
 	}
 
+	// Write the generated PDF to the response writer
 	if _, err := pdf.WriteTo(w); err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
 func taxInvoiceBarSection(pdf *gopdf.GoPdf) error {
