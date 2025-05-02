@@ -2,10 +2,12 @@ package utils
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"math"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -103,14 +105,27 @@ func findMainHeaderCordinates(pdf *gopdf.GoPdf, spacing float64, text string) (f
 }
 
 func findLogoPath(billerId string) (string, error) {
+	dir := "./uploads/logos"
 	extensions := []string{".png", ".jpg", ".jpeg"}
-	for _, ext := range extensions {
-		path := fmt.Sprintf("./uploads/logos/%s-logo%s", billerId, ext)
 
-		if fileExists(path) {
-			return path, nil
+	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return nil
 		}
+
+		name := d.Name()
+		for _, ext := range extensions {
+			if strings.HasPrefix(name, billerId+"-") && strings.HasSuffix(name, ext) {
+				return fmt.Errorf("found:%s", path)
+			}
+		}
+		return nil
+	})
+
+	if err != nil && strings.HasPrefix(err.Error(), "found:") {
+		return strings.TrimPrefix(err.Error(), "found:"), nil
 	}
+
 	return "", fmt.Errorf("logo not found for billerId: %s", billerId)
 }
 
